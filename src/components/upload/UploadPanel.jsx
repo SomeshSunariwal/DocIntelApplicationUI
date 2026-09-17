@@ -1,11 +1,14 @@
 import React, { useRef, useState } from "react";
 import { CloudUpload, FolderOpen } from "lucide-react";
-const allowed = ["pdf", "doc", "docx", "txt", "ppt", "pptx", "xls", "xlsx"];
-const pills = ["PDF", "DOC", "DOCX", "TXT", "PPT", "XLS"];
+
+const allowed = ["pdf", "doc", "docx", "txt"];
+const pills = ["PDF", "DOC", "DOCX", "TXT"];
+
 export default function UploadPanel({ onFiles }) {
   const ref = useRef();
   const [drag, setDrag] = useState(false);
   const [error, setError] = useState("");
+
   const handleFiles = (files) => {
     setError("");
     const valid = files.filter((f) => {
@@ -16,6 +19,7 @@ export default function UploadPanel({ onFiles }) {
       setError("Unsupported type or file larger than 50MB.");
     if (valid.length) onFiles(valid);
   };
+
   return (
     <section className="surface rounded-xl border border-slate-200 bg-white p-3.5 shadow-soft dark:bg-[#111a2d]">
       <h2 className="mb-3 text-[17px] font-bold">Upload Documents</h2>
@@ -30,7 +34,7 @@ export default function UploadPanel({ onFiles }) {
           setDrag(false);
           handleFiles([...e.dataTransfer.files]);
         }}
-        className={`flex h-[216px] flex-col items-center justify-center rounded-lg border border-dashed px-3 text-center transition ${drag ? "border-blue-500 bg-blue-50/60" : "border-blue-300"} dark:border-blue-800 dark:bg-slate-950/20`}
+        className={`flex h-54 flex-col items-center justify-center rounded-lg border border-dashed px-3 pt-4 pb-2 text-center transition ${drag ? "border-blue-500 bg-blue-50/60" : "border-blue-300"} dark:border-blue-800 dark:bg-slate-950/20`}
       >
         <CloudUpload size={42} className="mb-2 text-blue-600" />
         <div className="text-[13px] font-medium">
@@ -49,7 +53,7 @@ export default function UploadPanel({ onFiles }) {
         </div>
         <button
           onClick={() => ref.current?.click()}
-          className="flex w-full max-w-[270px] items-center justify-center gap-2 rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 py-2 text-[13px] font-medium text-white"
+          className="flex w-full max-w-[270px] items-center justify-center gap-2 rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 py-2  font-medium text-white"
         >
           <FolderOpen size={16} />
           Choose Files
