@@ -19,6 +19,7 @@ import FileIcon from "../common/FileIcon";
 import PdfPage from "./PdfPage";
 import { getDocument } from "pdfjs-dist";
 import mammoth from "mammoth/mammoth.browser";
+import { PromptInputBasic } from "../chat/PromptInputBasic";
 
 const MIN_ZOOM = 50;
 const MAX_ZOOM = 200;
@@ -1565,12 +1566,12 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
             </div>
           </>
         );
-      // case "Chat":
-      //   return (
-      //     <>
-      //       <ChatBox />
-      //     </>
-      //   );
+      case "Chat":
+        return (
+          <div className="flex size-full items-end p-4 mb-4 justify-center">
+            <PromptInputBasic />
+          </div>
+        );
       default:
         return (
           <div className="min-h-0 flex-1 overflow-auto p-8">
@@ -1653,15 +1654,17 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
       </div>
 
       <div className="flex h-8 shrink-0 items-end text-[12px] gap-7 border-b border-slate-100 px-4 dark:border-slate-800">
-        {["Viewer", "Summary", "Key Insights", "Related Content"].map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`h-6 whitespace-nowrap ${tab === t ? "border-b-2 border-blue-600 font-semibold text-blue-600" : "text-slate-500"}`}
-          >
-            {t}
-          </button>
-        ))}
+        {["Viewer", "Chat", "Summary", "Key Insights", "Related Content"].map(
+          (t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`h-6 whitespace-nowrap ${tab === t ? "border-b-2 border-blue-600 font-semibold text-blue-600" : "text-slate-500"}`}
+            >
+              {t}
+            </button>
+          ),
+        )}
       </div>
 
       <>{tabView}</>
