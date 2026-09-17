@@ -1145,6 +1145,445 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
     );
   }
 
+  const tabView = (() => {
+    switch (tab) {
+      case "Viewer":
+        return (
+          <>
+            <div className="flex min-h-[44px] shrink-0 items-center border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center border-r border-slate-100 px-3 dark:border-slate-800">
+                <button
+                  onClick={() => goToPage(page - 1)}
+                  disabled={page <= 1}
+                  className="disabled:opacity-30"
+                >
+                  <ChevronLeft size={17} />
+                </button>
+                <button
+                  onClick={() => {
+                    const value = window.prompt("Go to page", String(page));
+                    if (value) goToPage(value);
+                  }}
+                  className="mx-2 rounded bg-slate-100 px-2 py-1 text-[12px] dark:bg-slate-800"
+                >
+                  {page}
+                </button>
+                <span className="text-[12px]">/ {actualPageCount}</span>
+                <button
+                  onClick={() => goToPage(page + 1)}
+                  disabled={page >= actualPageCount}
+                  className="ml-2 disabled:opacity-30"
+                >
+                  <ChevronRight size={17} />
+                </button>
+              </div>
+              <div className="flex items-center gap-2 border-r border-slate-100 px-3 dark:border-slate-800">
+                <button
+                  onClick={() => changeZoom(-10)}
+                  disabled={zoom <= MIN_ZOOM}
+                  className="disabled:opacity-30"
+                  title="Zoom out"
+                >
+                  <Minus size={16} />
+                </button>
+                <span className="rounded bg-slate-100 px-3 py-1 text-[12px] dark:bg-slate-800">
+                  {zoom}%
+                </span>
+                <button
+                  onClick={() => changeZoom(10)}
+                  disabled={zoom >= MAX_ZOOM}
+                  className="disabled:opacity-30"
+                  title="Zoom in"
+                >
+                  <Plus size={16} />
+                </button>
+                <button
+                  onClick={resetZoom}
+                  disabled={zoom === 100}
+                  className="rounded px-1.5 text-[11px] font-medium text-slate-500 hover:text-slate-800 disabled:opacity-30 dark:hover:text-slate-200"
+                  title="Reset zoom"
+                >
+                  Reset
+                </button>
+              </div>
+              <div className="border-r border-slate-100 px-3 dark:border-slate-800">
+                <select
+                  value={viewMode}
+                  onChange={(e) => {
+                    const nextMode = e.target.value;
+                    zoomingRef.current = false;
+                    setViewMode(nextMode);
+                    setRenderedPages((prev) => {
+                      const next = new Set(prev);
+                      [page - 1, page, page + 1].forEach((n) => {
+                        if (n >= 1 && n <= actualPageCount) next.add(n);
+                      });
+                      return next;
+                    });
+                  }}
+                  className="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium outline-none dark:border-slate-700 dark:bg-slate-900"
+                  aria-label="PDF page display mode"
+                >
+                  <option value="all">All pages</option>
+                  <option value="page">Page by page</option>
+                </select>
+              </div>
+              <button
+                onClick={toggleFullscreen}
+                className="mx-3"
+                title={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+              >
+                {fullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              </button>
+              <div className="ml-auto mr-3 flex h-8 items-center justify-end gap-2 text-[11px] text-slate-500">
+                <div
+                  className={`flex h-8 items-center overflow-hidden transition-[width,opacity] duration-200 ease-in-out ${searchOpen ? "w-[250px] max-w-[35vw] opacity-100" : "w-0 opacity-0 pointer-events-none"}`}
+                >
+                  <div className="flex h-8 w-[250px] max-w-[35vw] items-center gap-2 rounded border border-slate-200 px-2 dark:border-slate-700">
+                    <Search size={14} className="shrink-0" />
+                    <input
+                      autoFocus={searchOpen}
+                      value={viewerSearch}
+                      onChange={(e) => {
+                        setViewerSearch(e.target.value);
+                        setViewerSearchActive(true);
+                      }}
+                      className="w-full bg-transparent outline-none"
+                      placeholder="Search in document"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setViewerSearch("");
+                        setViewerSearchActive(false);
+                        setSearchMatches([]);
+                        setSearchIndex(0);
+                        setSearchOpen(false);
+                      }}
+                      className="shrink-0 rounded p-0.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                      title="Close search"
+                      aria-label="Close search"
+                    >
+                      <X size={14} />
+                    </button>
+                    <span className="shrink-0 text-[10px]">
+                      {currentSearchText}
+                    </span>
+                  </div>
+                </div>
+                {!searchOpen && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchOpen(true)}
+                    className="rounded p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    title="Search in document"
+                    aria-label="Search in document"
+                  >
+                    <Search size={15} />
+                  </button>
+                )}
+              </div>
+              {searchMatches.length > 1 && (
+                <>
+                  <button
+                    onClick={() =>
+                      setSearchIndex(
+                        (i) =>
+                          (i - 1 + searchMatches.length) % searchMatches.length,
+                      )
+                    }
+                    className="mr-1 text-slate-500"
+                    title="Previous match"
+                  >
+                    <ChevronLeft size={15} />
+                  </button>
+                  <button
+                    onClick={() =>
+                      setSearchIndex((i) => (i + 1) % searchMatches.length)
+                    }
+                    className="mr-2 text-slate-500"
+                    title="Next match"
+                  >
+                    <ChevronRight size={15} />
+                  </button>
+                </>
+              )}
+              <button
+                onClick={() => setRefreshKey((v) => v + 1)}
+                className="mr-3 text-slate-500"
+                title="Refresh page"
+              >
+                <RefreshCcw size={15} />
+              </button>
+            </div>
+
+            <div className="flex min-h-0 flex-1 overflow-hidden">
+              <aside
+                ref={thumbnailRailRef}
+                className="thin-scroll w-[112px] shrink-0 overflow-y-auto bg-slate-50 p-2 dark:bg-slate-900"
+              >
+                <div ref={thumbnailContentRef} className="relative">
+                  <div
+                    ref={thumbnailSelectionRef}
+                    className="pointer-events-none absolute left-0 top-0 z-20 box-border rounded border-2 border-blue-500 opacity-0 transition-transform duration-200 ease-out"
+                  />
+                  {pdf &&
+                    Array.from(
+                      { length: actualPageCount },
+                      (_, i) => i + 1,
+                    ).map((p) => (
+                      <button
+                        key={p}
+                        ref={(node) => {
+                          if (node) thumbnailRefs.current.set(p, node);
+                          else thumbnailRefs.current.delete(p);
+                        }}
+                        onClick={() => goToPage(p, { smooth: true })}
+                        className="mb-3 block w-full"
+                      >
+                        <div
+                          data-thumbnail-box
+                          className="mx-auto flex h-[113px] w-[72px] items-center justify-center overflow-hidden rounded border border-slate-200 bg-white"
+                        >
+                          <PdfPage
+                            pdf={pdf}
+                            pageNumber={p}
+                            thumbnail
+                            render={true}
+                          />
+                        </div>
+                        <div
+                          className={`mt-1 text-center text-[10px] ${page === p ? "text-blue-600" : ""}`}
+                        >
+                          {p}
+                        </div>
+                      </button>
+                    ))}
+                  {doc.type === "txt" &&
+                    Array.from(
+                      { length: actualPageCount },
+                      (_, i) => i + 1,
+                    ).map((p) => (
+                      <button
+                        key={p}
+                        ref={(node) => {
+                          if (node) thumbnailRefs.current.set(p, node);
+                          else thumbnailRefs.current.delete(p);
+                        }}
+                        onClick={() => goToPage(p, { smooth: true })}
+                        className="mb-3 block w-full"
+                      >
+                        <div
+                          data-thumbnail-box
+                          className="mx-auto h-[113px] w-[72px] overflow-hidden rounded border border-slate-200 bg-white p-1 text-left text-[8px] leading-3 text-slate-500"
+                        >
+                          {String(documentPages[p - 1] || "").slice(0, 360)}
+                        </div>
+                        <div
+                          className={`mt-1 text-center text-[10px] ${page === p ? "text-blue-600" : ""}`}
+                        >
+                          {p}
+                        </div>
+                      </button>
+                    ))}
+                  {isWordDocument(doc) &&
+                    Array.from(
+                      { length: actualPageCount },
+                      (_, i) => i + 1,
+                    ).map((p) => (
+                      <button
+                        key={p}
+                        ref={(node) => {
+                          if (node) thumbnailRefs.current.set(p, node);
+                          else thumbnailRefs.current.delete(p);
+                        }}
+                        onClick={() => goToPage(p, { smooth: true })}
+                        className="mb-3 block w-full"
+                      >
+                        <div
+                          data-thumbnail-box
+                          className="mx-auto flex h-[113px] w-[72px] items-center justify-center overflow-hidden rounded border border-slate-200 bg-white text-[9px] font-medium text-slate-500"
+                        >
+                          <div className="px-1 text-center leading-3">
+                            A4
+                            <br />
+                            Page {p}
+                          </div>
+                        </div>
+                        <div
+                          className={`mt-1 text-center text-[10px] ${page === p ? "text-blue-600" : ""}`}
+                        >
+                          {p}
+                        </div>
+                      </button>
+                    ))}
+                </div>
+              </aside>
+
+              <div
+                ref={pdfScrollRef}
+                className="thin-scroll min-w-0 flex-1 overflow-auto bg-slate-100 p-4 sm:p-6 dark:bg-slate-950"
+              >
+                <div className="mx-auto flex min-w-0 flex-col items-center gap-5 py-1">
+                  {doc.type === "pdf" &&
+                    pdf &&
+                    (viewMode === "page" ? [page] : pageElements).map((p) => {
+                      const size = pageSizes[p - 1];
+                      const width = size
+                        ? size.width * (zoom / 100)
+                        : 720 * (zoom / 100);
+                      const height = size
+                        ? size.height * (zoom / 100)
+                        : 930 * (zoom / 100);
+                      const shouldRender =
+                        viewMode === "page" ||
+                        viewerSearchActive ||
+                        renderedPages.has(p);
+                      return (
+                        <div
+                          key={p}
+                          ref={(node) => {
+                            if (node) pageRefs.current.set(p, node);
+                            else pageRefs.current.delete(p);
+                          }}
+                          data-page={p}
+                          className="pdf-paper relative shrink-0 overflow-hidden shadow-sm"
+                          style={{ width, minHeight: height }}
+                        >
+                          {shouldRender ? (
+                            <PdfPage
+                              key={`${p}-${refreshKey}`}
+                              pdf={pdf}
+                              pageNumber={p}
+                              scale={zoom / 100}
+                              render
+                              searchTerm={
+                                viewerSearchActive ? viewerSearch : ""
+                              }
+                              searchMatchOffset={
+                                viewerSearchActive
+                                  ? searchMatches.filter((m) => m.page < p)
+                                      .length
+                                  : 0
+                              }
+                              currentSearchMatch={
+                                viewerSearchActive ? searchIndex : -1
+                              }
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-[11px] text-slate-300">
+                              Page {p}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  {doc.type === "pdf" && !pdf && !pdfError && (
+                    <div className="flex h-[520px] w-[720px] max-w-full items-center justify-center rounded bg-white text-sm text-slate-500 shadow-sm">
+                      Loading PDF…
+                    </div>
+                  )}
+                  {doc.type === "pdf" && pdfError && (
+                    <div className="flex h-[520px] w-[720px] max-w-full flex-col items-center justify-center rounded bg-white text-sm text-red-500 shadow-sm">
+                      <div>Unable to load the PDF.</div>
+                      <button
+                        onClick={() => setRefreshKey((v) => v + 1)}
+                        className="mt-3 rounded border px-3 py-1 text-xs text-slate-600"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  )}
+                  {doc.type === "txt" &&
+                    (viewMode === "page"
+                      ? [page]
+                      : documentPages.map((_, i) => i + 1)
+                    ).map((p) => {
+                      const content = documentPages[p - 1] || "";
+                      const scaledWidth = 595 * (zoom / 100);
+                      const scaledHeight = 842 * (zoom / 100);
+                      return (
+                        <div
+                          key={`${doc.id}-${p}`}
+                          ref={(node) => {
+                            if (node) pageRefs.current.set(p, node);
+                            else pageRefs.current.delete(p);
+                          }}
+                          data-page={p}
+                          className="pdf-paper relative shrink-0 overflow-hidden shadow-sm"
+                          style={{
+                            width: scaledWidth,
+                            minHeight: scaledHeight,
+                          }}
+                        >
+                          <div
+                            className="txt-page-content doc-page-content absolute left-0 top-0 min-h-[842px] w-[595px] overflow-hidden text-[15px] leading-7"
+                            style={{
+                              transform: `scale(${zoom / 100})`,
+                              transformOrigin: "top left",
+                            }}
+                          >
+                            <pre className="m-0 whitespace-pre-wrap break-words font-sans text-[15px] leading-7">
+                              {highlightPlainText(
+                                content,
+                                viewerSearch,
+                                documentPages
+                                  .slice(0, p - 1)
+                                  .reduce((total, pageText) => {
+                                    const needle =
+                                      viewerSearch.toLocaleLowerCase();
+                                    if (!needle) return total;
+                                    const lower = (
+                                      pageText || ""
+                                    ).toLocaleLowerCase();
+                                    let count = 0;
+                                    let at = lower.indexOf(needle);
+                                    while (at !== -1) {
+                                      count += 1;
+                                      at = lower.indexOf(
+                                        needle,
+                                        at + Math.max(1, needle.length),
+                                      );
+                                    }
+                                    return total + count;
+                                  }, 0),
+                                searchIndex,
+                              )}
+                            </pre>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  {isWordDocument(doc) && (
+                    <div
+                      className="word-document-shell shrink-0"
+                      ref={wordViewerRef}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      // case "Chat":
+      //   return (
+      //     <>
+      //       <ChatBox />
+      //     </>
+      //   );
+      default:
+        return (
+          <div className="min-h-0 flex-1 overflow-auto p-8">
+            <h2 className="text-xl font-bold">{tab}</h2>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-500">
+              Mock {tab.toLowerCase()} generated from the selected document.
+              This area is ready to be connected to your RAG backend.
+            </p>
+          </div>
+        );
+    }
+  })();
+
   return (
     <section
       ref={viewerRef}
@@ -1162,8 +1601,8 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
             {doc.date}
           </div>
         </div>
-        <div className="ml-auto flex items-center gap-2">
-          <button className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-500 to-blue-500 px-4 py-2 text-[12px] font-semibold text-white">
+        <div className="ml-auto flex items-center gap-2 text-[12px]">
+          <button className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-500 to-blue-500 px-4 py-2 font-semibold text-white">
             <Sparkles size={15} />
             Ask AI
           </button>
@@ -1213,434 +1652,19 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
         </div>
       </div>
 
-      <div className="flex h-10 shrink-0 items-end gap-7 border-b border-slate-100 px-4 dark:border-slate-800">
+      <div className="flex h-8 shrink-0 items-end text-[12px] gap-7 border-b border-slate-100 px-4 dark:border-slate-800">
         {["Viewer", "Summary", "Key Insights", "Related Content"].map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`h-10 whitespace-nowrap text-[12px] ${tab === t ? "border-b-2 border-blue-600 font-semibold text-blue-600" : "text-slate-500"}`}
+            className={`h-6 whitespace-nowrap ${tab === t ? "border-b-2 border-blue-600 font-semibold text-blue-600" : "text-slate-500"}`}
           >
             {t}
           </button>
         ))}
       </div>
 
-      {tab !== "Viewer" ? (
-        <div className="min-h-0 flex-1 overflow-auto p-8">
-          <h2 className="text-xl font-bold">{tab}</h2>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-500">
-            Mock {tab.toLowerCase()} generated from the selected document. This
-            area is ready to be connected to your RAG backend.
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="flex min-h-[44px] shrink-0 items-center border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center border-r border-slate-100 px-3 dark:border-slate-800">
-              <button
-                onClick={() => goToPage(page - 1)}
-                disabled={page <= 1}
-                className="disabled:opacity-30"
-              >
-                <ChevronLeft size={17} />
-              </button>
-              <button
-                onClick={() => {
-                  const value = window.prompt("Go to page", String(page));
-                  if (value) goToPage(value);
-                }}
-                className="mx-2 rounded bg-slate-100 px-2 py-1 text-[12px] dark:bg-slate-800"
-              >
-                {page}
-              </button>
-              <span className="text-[12px]">/ {actualPageCount}</span>
-              <button
-                onClick={() => goToPage(page + 1)}
-                disabled={page >= actualPageCount}
-                className="ml-2 disabled:opacity-30"
-              >
-                <ChevronRight size={17} />
-              </button>
-            </div>
-            <div className="flex items-center gap-2 border-r border-slate-100 px-3 dark:border-slate-800">
-              <button
-                onClick={() => changeZoom(-10)}
-                disabled={zoom <= MIN_ZOOM}
-                className="disabled:opacity-30"
-                title="Zoom out"
-              >
-                <Minus size={16} />
-              </button>
-              <span className="rounded bg-slate-100 px-3 py-1 text-[12px] dark:bg-slate-800">
-                {zoom}%
-              </span>
-              <button
-                onClick={() => changeZoom(10)}
-                disabled={zoom >= MAX_ZOOM}
-                className="disabled:opacity-30"
-                title="Zoom in"
-              >
-                <Plus size={16} />
-              </button>
-              <button
-                onClick={resetZoom}
-                disabled={zoom === 100}
-                className="rounded px-1.5 text-[11px] font-medium text-slate-500 hover:text-slate-800 disabled:opacity-30 dark:hover:text-slate-200"
-                title="Reset zoom"
-              >
-                Reset
-              </button>
-            </div>
-            <div className="border-r border-slate-100 px-3 dark:border-slate-800">
-              <select
-                value={viewMode}
-                onChange={(e) => {
-                  const nextMode = e.target.value;
-                  zoomingRef.current = false;
-                  setViewMode(nextMode);
-                  setRenderedPages((prev) => {
-                    const next = new Set(prev);
-                    [page - 1, page, page + 1].forEach((n) => {
-                      if (n >= 1 && n <= actualPageCount) next.add(n);
-                    });
-                    return next;
-                  });
-                }}
-                className="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium outline-none dark:border-slate-700 dark:bg-slate-900"
-                aria-label="PDF page display mode"
-              >
-                <option value="all">All pages</option>
-                <option value="page">Page by page</option>
-              </select>
-            </div>
-            <button
-              onClick={toggleFullscreen}
-              className="mx-3"
-              title={fullscreen ? "Exit fullscreen" : "Fullscreen"}
-            >
-              {fullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-            </button>
-            <div className="ml-auto mr-3 flex h-8 items-center justify-end gap-2 text-[11px] text-slate-500">
-              <div
-                className={`flex h-8 items-center overflow-hidden transition-[width,opacity] duration-200 ease-in-out ${searchOpen ? "w-[250px] max-w-[35vw] opacity-100" : "w-0 opacity-0 pointer-events-none"}`}
-              >
-                <div className="flex h-8 w-[250px] max-w-[35vw] items-center gap-2 rounded border border-slate-200 px-2 dark:border-slate-700">
-                  <Search size={14} className="shrink-0" />
-                  <input
-                    autoFocus={searchOpen}
-                    value={viewerSearch}
-                    onChange={(e) => {
-                      setViewerSearch(e.target.value);
-                      setViewerSearchActive(true);
-                    }}
-                    className="w-full bg-transparent outline-none"
-                    placeholder="Search in document"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setViewerSearch("");
-                      setViewerSearchActive(false);
-                      setSearchMatches([]);
-                      setSearchIndex(0);
-                      setSearchOpen(false);
-                    }}
-                    className="shrink-0 rounded p-0.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                    title="Close search"
-                    aria-label="Close search"
-                  >
-                    <X size={14} />
-                  </button>
-                  <span className="shrink-0 text-[10px]">
-                    {currentSearchText}
-                  </span>
-                </div>
-              </div>
-              {!searchOpen && (
-                <button
-                  type="button"
-                  onClick={() => setSearchOpen(true)}
-                  className="rounded p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  title="Search in document"
-                  aria-label="Search in document"
-                >
-                  <Search size={15} />
-                </button>
-              )}
-            </div>
-            {searchMatches.length > 1 && (
-              <>
-                <button
-                  onClick={() =>
-                    setSearchIndex(
-                      (i) =>
-                        (i - 1 + searchMatches.length) % searchMatches.length,
-                    )
-                  }
-                  className="mr-1 text-slate-500"
-                  title="Previous match"
-                >
-                  <ChevronLeft size={15} />
-                </button>
-                <button
-                  onClick={() =>
-                    setSearchIndex((i) => (i + 1) % searchMatches.length)
-                  }
-                  className="mr-2 text-slate-500"
-                  title="Next match"
-                >
-                  <ChevronRight size={15} />
-                </button>
-              </>
-            )}
-            <button
-              onClick={() => setRefreshKey((v) => v + 1)}
-              className="mr-3 text-slate-500"
-              title="Refresh page"
-            >
-              <RefreshCcw size={15} />
-            </button>
-          </div>
-
-          <div className="flex min-h-0 flex-1 overflow-hidden">
-            <aside
-              ref={thumbnailRailRef}
-              className="thin-scroll w-[112px] shrink-0 overflow-y-auto bg-slate-50 p-2 dark:bg-slate-900"
-            >
-              <div ref={thumbnailContentRef} className="relative">
-                <div
-                  ref={thumbnailSelectionRef}
-                  className="pointer-events-none absolute left-0 top-0 z-20 box-border rounded border-2 border-blue-500 opacity-0 transition-transform duration-200 ease-out"
-                />
-                {pdf &&
-                  Array.from({ length: actualPageCount }, (_, i) => i + 1).map(
-                    (p) => (
-                      <button
-                        key={p}
-                        ref={(node) => {
-                          if (node) thumbnailRefs.current.set(p, node);
-                          else thumbnailRefs.current.delete(p);
-                        }}
-                        onClick={() => goToPage(p, { smooth: true })}
-                        className="mb-3 block w-full"
-                      >
-                        <div
-                          data-thumbnail-box
-                          className="mx-auto flex h-[113px] w-[72px] items-center justify-center overflow-hidden rounded border border-slate-200 bg-white"
-                        >
-                          <PdfPage
-                            pdf={pdf}
-                            pageNumber={p}
-                            thumbnail
-                            render={true}
-                          />
-                        </div>
-                        <div
-                          className={`mt-1 text-center text-[10px] ${page === p ? "text-blue-600" : ""}`}
-                        >
-                          {p}
-                        </div>
-                      </button>
-                    ),
-                  )}
-                {doc.type === "txt" &&
-                  Array.from({ length: actualPageCount }, (_, i) => i + 1).map(
-                    (p) => (
-                      <button
-                        key={p}
-                        ref={(node) => {
-                          if (node) thumbnailRefs.current.set(p, node);
-                          else thumbnailRefs.current.delete(p);
-                        }}
-                        onClick={() => goToPage(p, { smooth: true })}
-                        className="mb-3 block w-full"
-                      >
-                        <div
-                          data-thumbnail-box
-                          className="mx-auto h-[113px] w-[72px] overflow-hidden rounded border border-slate-200 bg-white p-1 text-left text-[8px] leading-3 text-slate-500"
-                        >
-                          {String(documentPages[p - 1] || "").slice(0, 360)}
-                        </div>
-                        <div
-                          className={`mt-1 text-center text-[10px] ${page === p ? "text-blue-600" : ""}`}
-                        >
-                          {p}
-                        </div>
-                      </button>
-                    ),
-                  )}
-                {isWordDocument(doc) &&
-                  Array.from({ length: actualPageCount }, (_, i) => i + 1).map(
-                    (p) => (
-                      <button
-                        key={p}
-                        ref={(node) => {
-                          if (node) thumbnailRefs.current.set(p, node);
-                          else thumbnailRefs.current.delete(p);
-                        }}
-                        onClick={() => goToPage(p, { smooth: true })}
-                        className="mb-3 block w-full"
-                      >
-                        <div
-                          data-thumbnail-box
-                          className="mx-auto flex h-[113px] w-[72px] items-center justify-center overflow-hidden rounded border border-slate-200 bg-white text-[9px] font-medium text-slate-500"
-                        >
-                          <div className="px-1 text-center leading-3">
-                            A4
-                            <br />
-                            Page {p}
-                          </div>
-                        </div>
-                        <div
-                          className={`mt-1 text-center text-[10px] ${page === p ? "text-blue-600" : ""}`}
-                        >
-                          {p}
-                        </div>
-                      </button>
-                    ),
-                  )}
-              </div>
-            </aside>
-
-            <div
-              ref={pdfScrollRef}
-              className="thin-scroll min-w-0 flex-1 overflow-auto bg-slate-100 p-4 sm:p-6 dark:bg-slate-950"
-            >
-              <div className="mx-auto flex min-w-0 flex-col items-center gap-5 py-1">
-                {doc.type === "pdf" &&
-                  pdf &&
-                  (viewMode === "page" ? [page] : pageElements).map((p) => {
-                    const size = pageSizes[p - 1];
-                    const width = size
-                      ? size.width * (zoom / 100)
-                      : 720 * (zoom / 100);
-                    const height = size
-                      ? size.height * (zoom / 100)
-                      : 930 * (zoom / 100);
-                    const shouldRender =
-                      viewMode === "page" ||
-                      viewerSearchActive ||
-                      renderedPages.has(p);
-                    return (
-                      <div
-                        key={p}
-                        ref={(node) => {
-                          if (node) pageRefs.current.set(p, node);
-                          else pageRefs.current.delete(p);
-                        }}
-                        data-page={p}
-                        className="pdf-paper relative shrink-0 overflow-hidden shadow-sm"
-                        style={{ width, minHeight: height }}
-                      >
-                        {shouldRender ? (
-                          <PdfPage
-                            key={`${p}-${refreshKey}`}
-                            pdf={pdf}
-                            pageNumber={p}
-                            scale={zoom / 100}
-                            render
-                            searchTerm={viewerSearchActive ? viewerSearch : ""}
-                            searchMatchOffset={
-                              viewerSearchActive
-                                ? searchMatches.filter((m) => m.page < p).length
-                                : 0
-                            }
-                            currentSearchMatch={
-                              viewerSearchActive ? searchIndex : -1
-                            }
-                          />
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center text-[11px] text-slate-300">
-                            Page {p}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                {doc.type === "pdf" && !pdf && !pdfError && (
-                  <div className="flex h-[520px] w-[720px] max-w-full items-center justify-center rounded bg-white text-sm text-slate-500 shadow-sm">
-                    Loading PDF…
-                  </div>
-                )}
-                {doc.type === "pdf" && pdfError && (
-                  <div className="flex h-[520px] w-[720px] max-w-full flex-col items-center justify-center rounded bg-white text-sm text-red-500 shadow-sm">
-                    <div>Unable to load the PDF.</div>
-                    <button
-                      onClick={() => setRefreshKey((v) => v + 1)}
-                      className="mt-3 rounded border px-3 py-1 text-xs text-slate-600"
-                    >
-                      Retry
-                    </button>
-                  </div>
-                )}
-                {doc.type === "txt" &&
-                  (viewMode === "page"
-                    ? [page]
-                    : documentPages.map((_, i) => i + 1)
-                  ).map((p) => {
-                    const content = documentPages[p - 1] || "";
-                    const scaledWidth = 595 * (zoom / 100);
-                    const scaledHeight = 842 * (zoom / 100);
-                    return (
-                      <div
-                        key={`${doc.id}-${p}`}
-                        ref={(node) => {
-                          if (node) pageRefs.current.set(p, node);
-                          else pageRefs.current.delete(p);
-                        }}
-                        data-page={p}
-                        className="pdf-paper relative shrink-0 overflow-hidden shadow-sm"
-                        style={{ width: scaledWidth, minHeight: scaledHeight }}
-                      >
-                        <div
-                          className="txt-page-content doc-page-content absolute left-0 top-0 min-h-[842px] w-[595px] overflow-hidden text-[15px] leading-7"
-                          style={{
-                            transform: `scale(${zoom / 100})`,
-                            transformOrigin: "top left",
-                          }}
-                        >
-                          <pre className="m-0 whitespace-pre-wrap break-words font-sans text-[15px] leading-7">
-                            {highlightPlainText(
-                              content,
-                              viewerSearch,
-                              documentPages
-                                .slice(0, p - 1)
-                                .reduce((total, pageText) => {
-                                  const needle =
-                                    viewerSearch.toLocaleLowerCase();
-                                  if (!needle) return total;
-                                  const lower = (
-                                    pageText || ""
-                                  ).toLocaleLowerCase();
-                                  let count = 0;
-                                  let at = lower.indexOf(needle);
-                                  while (at !== -1) {
-                                    count += 1;
-                                    at = lower.indexOf(
-                                      needle,
-                                      at + Math.max(1, needle.length),
-                                    );
-                                  }
-                                  return total + count;
-                                }, 0),
-                              searchIndex,
-                            )}
-                          </pre>
-                        </div>
-                      </div>
-                    );
-                  })}
-                {isWordDocument(doc) && (
-                  <div
-                    className="word-document-shell shrink-0"
-                    ref={wordViewerRef}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      <>{tabView}</>
     </section>
   );
 }
