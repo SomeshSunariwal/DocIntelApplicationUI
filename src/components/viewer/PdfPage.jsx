@@ -1,41 +1,48 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { TextLayer, GlobalWorkerOptions } from 'pdfjs-dist';
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import React, { useEffect, useRef, useState } from "react";
+import { TextLayer, GlobalWorkerOptions } from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
 GlobalWorkerOptions.workerSrc = pdfWorker;
-
 
 function highlightSearchTerm(layer, term, matchOffset = 0, currentMatch = -1) {
   const normalizedTerm = term.trim().toLocaleLowerCase();
   if (!layer || !normalizedTerm) return;
 
-  const spans = Array.from(layer.querySelectorAll(':scope > span'));
+  const spans = Array.from(layer.querySelectorAll(":scope > span"));
   if (!spans.length) return;
 
   // Build a searchable string from the text-layer spans so a phrase can be
   // highlighted even when PDF.js split it into multiple text items.
-  const parts = spans.map(span => span.textContent || '');
-  const joined = parts.join(' ');
+  const parts = spans.map((span) => span.textContent || "");
+  const joined = parts.join(" ");
   const lowerJoined = joined.toLocaleLowerCase();
   const ranges = [];
   let from = 0;
   while (true) {
     const index = lowerJoined.indexOf(normalizedTerm, from);
     if (index === -1) break;
-    ranges.push([index, index + normalizedTerm.length, matchOffset + ranges.length]);
+    ranges.push([
+      index,
+      index + normalizedTerm.length,
+      matchOffset + ranges.length,
+    ]);
     from = index + Math.max(1, normalizedTerm.length);
   }
   if (!ranges.length) return;
 
   let cursor = 0;
-  spans.forEach(span => {
-    const text = span.textContent || '';
+  spans.forEach((span) => {
+    const text = span.textContent || "";
     const start = cursor;
     const end = start + text.length;
     cursor = end + 1;
 
     const localRanges = ranges
-      .map(([a, b, occurrence]) => [Math.max(a, start), Math.min(b, end), occurrence])
+      .map(([a, b, occurrence]) => [
+        Math.max(a, start),
+        Math.min(b, end),
+        occurrence,
+      ])
       .filter(([a, b]) => b > a)
       .map(([a, b, occurrence]) => [a - start, b - start, occurrence]);
     if (!localRanges.length) return;
@@ -46,20 +53,31 @@ function highlightSearchTerm(layer, term, matchOffset = 0, currentMatch = -1) {
     const fragment = document.createDocumentFragment();
     let position = 0;
     localRanges.forEach(([a, b, occurrence]) => {
-      if (a > position) fragment.appendChild(document.createTextNode(text.slice(position, a)));
-      const mark = document.createElement('mark');
-      mark.className = `pdf-search-highlight ${occurrence === currentMatch ? 'pdf-search-highlight-current' : ''}`;
-      mark.setAttribute('data-search-match', String(occurrence));
+      if (a > position)
+        fragment.appendChild(document.createTextNode(text.slice(position, a)));
+      const mark = document.createElement("mark");
+      mark.className = `pdf-search-highlight ${occurrence === currentMatch ? "pdf-search-highlight-current" : ""}`;
+      mark.setAttribute("data-search-match", String(occurrence));
       mark.textContent = text.slice(a, b);
       fragment.appendChild(mark);
       position = b;
     });
-    if (position < text.length) fragment.appendChild(document.createTextNode(text.slice(position)));
+    if (position < text.length)
+      fragment.appendChild(document.createTextNode(text.slice(position)));
     span.replaceChildren(fragment);
   });
 }
 
-export default function PdfPage({ pdf, pageNumber, scale = 1, thumbnail = false, render = true, searchTerm = '', searchMatchOffset = 0, currentSearchMatch = -1 }) {
+export default function PdfPage({
+  pdf,
+  pageNumber,
+  scale = 1,
+  thumbnail = false,
+  render = true,
+  searchTerm = "",
+  searchMatchOffset = 0,
+  currentSearchMatch = -1,
+}) {
   const canvasRef = useRef(null);
   const textLayerRef = useRef(null);
   const renderTaskRef = useRef(null);
@@ -70,8 +88,12 @@ export default function PdfPage({ pdf, pageNumber, scale = 1, thumbnail = false,
     let cancelled = false;
 
     const cleanupTasks = () => {
-      try { renderTaskRef.current?.cancel?.(); } catch {}
-      try { textTaskRef.current?.cancel?.(); } catch {}
+      try {
+        renderTaskRef.current?.cancel?.();
+      } catch {}
+      try {
+        textTaskRef.current?.cancel?.();
+      } catch {}
       renderTaskRef.current = null;
       textTaskRef.current = null;
     };
@@ -99,10 +121,10 @@ export default function PdfPage({ pdf, pageNumber, scale = 1, thumbnail = false,
         canvas.style.width = `${viewport.width}px`;
         canvas.style.height = `${viewport.height}px`;
 
-        const ctx = canvas.getContext('2d', { alpha: false });
+        const ctx = canvas.getContext("2d", { alpha: false });
         ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
         ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
+        ctx.imageSmoothingQuality = "high";
 
         renderTaskRef.current = page.render({ canvasContext: ctx, viewport });
         await renderTaskRef.current.promise;
@@ -110,11 +132,11 @@ export default function PdfPage({ pdf, pageNumber, scale = 1, thumbnail = false,
 
         const layer = textLayerRef.current;
         if (!layer) return;
-        layer.innerHTML = '';
+        layer.innerHTML = "";
         layer.style.width = `${viewport.width}px`;
         layer.style.height = `${viewport.height}px`;
-        layer.style.setProperty('--scale-factor', String(viewport.scale));
-        layer.style.setProperty('--total-scale-factor', String(viewport.scale));
+        layer.style.setProperty("--scale-factor", String(viewport.scale));
+        layer.style.setProperty("--total-scale-factor", String(viewport.scale));
 
         const textContent = await page.getTextContent();
         if (cancelled) return;
@@ -125,9 +147,16 @@ export default function PdfPage({ pdf, pageNumber, scale = 1, thumbnail = false,
           viewport,
         });
         await textTaskRef.current.render();
-        if (!cancelled && searchTerm.trim()) highlightSearchTerm(layer, searchTerm, searchMatchOffset, currentSearchMatch);
+        if (!cancelled && searchTerm.trim())
+          highlightSearchTerm(
+            layer,
+            searchTerm,
+            searchMatchOffset,
+            currentSearchMatch,
+          );
       } catch (e) {
-        if (!cancelled && e?.name !== 'RenderingCancelledException') setError(true);
+        if (!cancelled && e?.name !== "RenderingCancelledException")
+          setError(true);
       }
     }
 
@@ -135,18 +164,38 @@ export default function PdfPage({ pdf, pageNumber, scale = 1, thumbnail = false,
     return () => {
       cancelled = true;
       cleanupTasks();
-      if (textLayerRef.current) textLayerRef.current.innerHTML = '';
+      if (textLayerRef.current) textLayerRef.current.innerHTML = "";
     };
-  }, [pdf, pageNumber, scale, thumbnail, render, searchTerm, searchMatchOffset, currentSearchMatch]);
+  }, [
+    pdf,
+    pageNumber,
+    scale,
+    thumbnail,
+    render,
+    searchTerm,
+    searchMatchOffset,
+    currentSearchMatch,
+  ]);
 
   if (!render) return null;
-  if (error) return <div className="flex min-h-[120px] items-center justify-center text-xs text-red-500">Unable to render page.</div>;
+  if (error)
+    return (
+      <div className="flex min-h-[120px] items-center justify-center text-xs text-red-500">
+        Unable to render page.
+      </div>
+    );
 
   return (
-    <div className="relative bg-white" style={{ width: 'fit-content', height: 'fit-content' }}>
+    <div
+      className="relative bg-white"
+      style={{ width: "fit-content", height: "fit-content" }}
+    >
       <canvas ref={canvasRef} className="block bg-white" />
       {!thumbnail && (
-        <div ref={textLayerRef} className="textLayer pdf-text-layer absolute left-0 top-0 select-text" />
+        <div
+          ref={textLayerRef}
+          className="textLayer pdf-text-layer absolute left-0 top-0 select-text"
+        />
       )}
     </div>
   );

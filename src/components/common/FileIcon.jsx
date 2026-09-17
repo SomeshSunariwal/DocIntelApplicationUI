@@ -1,2 +1,23 @@
-import React from 'react';
-export default function FileIcon({type='pdf',size='md'}){const t=type.toLowerCase();const map={pdf:['PDF','bg-[#ef262b]'],doc:['W','bg-[#1e78d7]'],docx:['W','bg-[#1e78d7]'],txt:['≡','bg-[#8793a6]'],xls:['X','bg-[#159a62]'],xlsx:['X','bg-[#159a62]'],ppt:['P','bg-[#e87522]'],pptx:['P','bg-[#e87522]']};const [label,bg]=map[t]||['≡','bg-[#8793a6]'];const cls=size==='sm'?'h-8 w-8 text-[9px]':'h-9 w-9 text-[9px]';return <div className={`${cls} ${bg} flex shrink-0 items-center justify-center rounded-[5px] font-bold text-white shadow-sm`}>{label}</div>}
+import React from "react";
+export default function FileIcon({ type = "pdf", size = "md" }) {
+  const t = type.toLowerCase();
+  const map = {
+    pdf: ["PDF", "bg-[#ef262b]"],
+    doc: ["W", "bg-[#1e78d7]"],
+    docx: ["W", "bg-[#1e78d7]"],
+    txt: ["≡", "bg-[#8793a6]"],
+    xls: ["X", "bg-[#159a62]"],
+    xlsx: ["X", "bg-[#159a62]"],
+    ppt: ["P", "bg-[#e87522]"],
+    pptx: ["P", "bg-[#e87522]"],
+  };
+  const [label, bg] = map[t] || ["≡", "bg-[#8793a6]"];
+  const cls = size === "sm" ? "h-8 w-8 text-[9px]" : "h-9 w-9 text-[9px]";
+  return (
+    <div
+      className={`${cls} ${bg} flex shrink-0 items-center justify-center rounded-[5px] font-bold text-white shadow-sm`}
+    >
+      {label}
+    </div>
+  );
+}
