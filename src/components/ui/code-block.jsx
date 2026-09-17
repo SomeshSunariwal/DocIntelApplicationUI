@@ -24,8 +24,7 @@ function CodeBlockCode({
   className,
   ...props
 }) {
-  const [highlightedHtml, setHighlightedHtml] =
-    (useState < string) | (null > null);
+  const [highlightedHtml, setHighlightedHtml] = useState(null);
 
   useEffect(() => {
     async function highlight() {

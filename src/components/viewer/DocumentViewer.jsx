@@ -1120,7 +1120,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
   if (!doc) {
     return (
       <section className="surface flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111a2d]">
-        <div className="max-w-[430px] px-5 text-center">
+        <div className="max-w-107.5 px-5 text-center">
           <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-50 text-blue-500 dark:bg-blue-950/50">
             <FileText size={38} />
           </div>
@@ -1568,9 +1568,9 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
         );
       case "Chat":
         return (
-          <div className="flex size-full items-end p-4 mb-4 justify-center">
+          <>
             <PromptInputBasic />
-          </div>
+          </>
         );
       default:
         return (
@@ -1590,7 +1590,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
       ref={viewerRef}
       className="surface relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111a2d]"
     >
-      <div className="flex min-h-[62px] shrink-0 items-center border-b border-slate-100 px-4 dark:border-slate-800">
+      <div className="flex min-h-15.5 shrink-0 items-center border-b border-slate-100 px-4 dark:border-slate-800">
         <FileIcon type={doc.type} />
         <div className="ml-3 min-w-0">
           <div className="truncate text-[16px] font-bold">{doc.name}</div>
@@ -1603,7 +1603,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2 text-[12px]">
-          <button className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-violet-500 to-blue-500 px-4 py-2 font-semibold text-white">
+          <button className="flex items-center gap-2 rounded-lg bg-linear-to-r from-violet-500 to-blue-500 px-4 py-2 font-semibold text-white">
             <Sparkles size={15} />
             Ask AI
           </button>

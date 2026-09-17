@@ -6,19 +6,12 @@ import {
   PromptInputActions,
   PromptInputTextarea,
 } from "../ui/prompt-input";
-
 import { Message, MessageAvatar, MessageContent } from "../ui/message";
-
 import { Source, SourceContent, SourceTrigger } from "../ui/source";
-
 import { ChatContainerContent, ChatContainerRoot } from "../ui/chat-container";
-
 import { ScrollButton } from "../ui/scroll-button";
-
 import { Button } from "@/components/ui/button";
-
 import { ArrowUp, Square } from "lucide-react";
-
 import { useState } from "react";
 
 export function PromptInputBasic() {
@@ -52,8 +45,32 @@ export function PromptInputBasic() {
       const assistantMessage = {
         id: crypto.randomUUID(),
         role: "assistant",
-        content:
-          "This is a temporary AI response. Later you can replace this with your actual API response.",
+        content: `
+## Hello World!
+
+This message supports **bold text**, *italics*, and other Markdown features.
+
+### Features
+
+- Bullet points
+- **Bold text**
+- *Italic text*
+- [Links](https://example.com)
+
+### Code
+
+\`\`\`js
+function hello() {
+  return "world";
+}
+\`\`\`
+
+> This is a blockquote.
+
+1. First item
+2. Second item
+3. Third item
+`,
         sources: [
           {
             href: "https://www.wikipedia.org",
@@ -82,13 +99,13 @@ export function PromptInputBasic() {
   return (
     <div className="flex h-full min-h-0 w-full flex-col">
       {/* =========================
-          CHAT MESSAGES
-          ========================= */}
+        CHAT MESSAGES
+        ========================= */}
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <ChatContainerRoot className="h-full w-full">
           <ChatContainerContent className="mx-auto flex w-full max-w-(--breakpoint-md) flex-col gap-6 px-4 py-6">
             {messages.length === 0 && (
-              <div className="flex min-h-[300px] items-center justify-center">
+              <div className="flex min-h-75 items-center justify-center">
                 <div className="text-center">
                   <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
                     How can I help?
@@ -108,25 +125,22 @@ export function PromptInputBasic() {
                   message.role === "user" ? "justify-end" : "justify-start"
                 }
               >
-                {/* AI Avatar */}
                 {message.role === "assistant" && (
                   <MessageAvatar src="/avatars/ai.png" alt="AI" fallback="AI" />
                 )}
 
                 <div className="flex max-w-[80%] flex-col gap-2">
-                  {/* Message */}
                   <MessageContent
                     markdown={message.role === "assistant"}
                     className={
                       message.role === "user"
-                        ? "bg-blue-600 text-white"
-                        : "bg-transparent p-0"
+                        ? "bg-gray-50 text-black dark:bg-gray-800 dark:text-white text-[14px]"
+                        : "bg-gray-50 text-black dark:bg-gray-800 dark:text-white text-[14px]"
                     }
                   >
                     {message.content}
                   </MessageContent>
 
-                  {/* Sources */}
                   {message.role === "assistant" &&
                     message.sources?.length > 0 && (
                       <div className="flex flex-wrap gap-2">
@@ -149,7 +163,6 @@ export function PromptInputBasic() {
               </Message>
             ))}
 
-            {/* Loading message */}
             {isLoading && (
               <Message className="justify-start">
                 <MessageAvatar src="/avatars/ai.png" alt="AI" fallback="AI" />
@@ -170,9 +183,6 @@ export function PromptInputBasic() {
             )}
           </ChatContainerContent>
 
-          {/* =========================
-              SCROLL TO BOTTOM
-              ========================= */}
           <div className="absolute bottom-4 right-6">
             <ScrollButton />
           </div>
@@ -180,8 +190,8 @@ export function PromptInputBasic() {
       </div>
 
       {/* =========================
-          PROMPT INPUT
-          ========================= */}
+        STATIC PROMPT INPUT
+        ========================= */}
       <div className="shrink-0 px-4 pb-4">
         <div className="mx-auto w-full max-w-(--breakpoint-md)">
           <PromptInput
