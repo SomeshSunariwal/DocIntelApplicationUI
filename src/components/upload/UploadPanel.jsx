@@ -1,11 +1,14 @@
 import React, { useRef, useState } from "react";
 import { CloudUpload, FolderOpen } from "lucide-react";
-const allowed = ["pdf", "doc", "docx", "txt", "ppt", "pptx", "xls", "xlsx"];
-const pills = ["PDF", "DOC", "DOCX", "TXT", "PPT", "XLS"];
+
+const allowed = ["pdf", "doc", "docx", "txt"];
+const pills = ["PDF", "DOC", "DOCX", "TXT"];
+
 export default function UploadPanel({ onFiles }) {
   const ref = useRef();
   const [drag, setDrag] = useState(false);
   const [error, setError] = useState("");
+
   const handleFiles = (files) => {
     setError("");
     const valid = files.filter((f) => {
@@ -16,6 +19,7 @@ export default function UploadPanel({ onFiles }) {
       setError("Unsupported type or file larger than 50MB.");
     if (valid.length) onFiles(valid);
   };
+
   return (
     <section className="surface rounded-xl border border-slate-200 bg-white p-3.5 shadow-soft dark:bg-[#111a2d]">
       <h2 className="mb-3 text-[17px] font-bold">Upload Documents</h2>

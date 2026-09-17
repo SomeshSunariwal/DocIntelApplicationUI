@@ -1,4 +1,3 @@
-import React from "react";
 import PdfPage from "./PdfPage";
 
 export default function DocumentPages({
