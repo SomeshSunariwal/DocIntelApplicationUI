@@ -6,10 +6,10 @@ import {
   FileText,
   Home,
   Search,
-  BarChart3,
   Settings,
   Sun,
   Moon,
+  MessageSquareText,
 } from "lucide-react";
 export default function Navbar({ dark, setDark, setLogin }) {
   return (
@@ -29,9 +29,7 @@ export default function Navbar({ dark, setDark, setLogin }) {
       </div>
       <nav className="flex flex-1 items-center gap-1">
         <Nav active icon={Home} label="Dashboard" />
-        <Nav icon={FileText} label="Documents" />
-        <Nav icon={Search} label="Search" />
-        <Nav icon={BarChart3} label="Analytics" />
+        <Nav icon={MessageSquareText} label="Chat" />
         <Nav icon={Settings} label="Settings" />
       </nav>
       <div className="flex items-center gap-3">

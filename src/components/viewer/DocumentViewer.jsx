@@ -675,8 +675,8 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
     setWordPageCount(0);
     pageRefs.current.clear();
 
-    const A4_WIDTH = 794;
-    const A4_HEIGHT = 1123;
+    const A4_WIDTH = 595;
+    const A4_HEIGHT = 842;
     const PAGE_PADDING = 56;
     const CONTENT_WIDTH = A4_WIDTH - PAGE_PADDING * 2;
     const CONTENT_HEIGHT = A4_HEIGHT - PAGE_PADDING * 2;
@@ -1579,8 +1579,8 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
                     : documentPages.map((_, i) => i + 1)
                   ).map((p) => {
                     const content = documentPages[p - 1] || "";
-                    const scaledWidth = 720 * (zoom / 100);
-                    const scaledHeight = 930 * (zoom / 100);
+                    const scaledWidth = 595 * (zoom / 100);
+                    const scaledHeight = 842 * (zoom / 100);
                     return (
                       <div
                         key={`${doc.id}-${p}`}
@@ -1593,7 +1593,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
                         style={{ width: scaledWidth, minHeight: scaledHeight }}
                       >
                         <div
-                          className="txt-page-content doc-page-content absolute left-0 top-0 min-h-[930px] w-[720px] overflow-hidden text-[15px] leading-7"
+                          className="txt-page-content doc-page-content absolute left-0 top-0 min-h-[842px] w-[595px] overflow-hidden text-[15px] leading-7"
                           style={{
                             transform: `scale(${zoom / 100})`,
                             transformOrigin: "top left",
