@@ -4,7 +4,7 @@ import { StickToBottom } from "use-stick-to-bottom";
 function ChatContainerRoot({ children, className, ...props }) {
   return (
     <StickToBottom
-      className={cn("flex overflow-y-auto", className)}
+      className={cn("flex overflow-y-auto thin-scroll", className)}
       resize="smooth"
       initial="instant"
       role="log"
