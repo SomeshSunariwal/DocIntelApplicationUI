@@ -23,7 +23,7 @@ export default function App() {
 
   useEffect(() => {
     let alive = true;
-    getDocuments(0, 12).then((batch) => {
+    getDocuments(0, 15).then((batch) => {
       if (!alive) return;
       setDocuments(batch);
       setServerOffset(batch.length);

@@ -27,19 +27,12 @@ export default function Navbar({ dark, setDark, setLogin }) {
           </div>
         </div>
       </div>
-      <nav className="flex flex-1 items-center gap-1">
+      <nav className="flex flex-1 items-center gap-1 text-[14px]">
         <Nav active icon={Home} label="Dashboard" />
         <Nav icon={MessageSquareText} label="Chat" />
         <Nav icon={Settings} label="Settings" />
       </nav>
       <div className="flex items-center gap-3">
-        <div className="hidden h-9 w-[205px] items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 text-xs text-slate-400 xl:flex dark:border-slate-700 dark:bg-slate-900">
-          <Search size={16} />
-          <span>Search anything...</span>
-          <span className="ml-auto rounded border px-1.5 py-0.5 text-[10px]">
-            <Command size={10} className="inline" /> K
-          </span>
-        </div>
         <button className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
           <Bell size={20} />
           <i className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />

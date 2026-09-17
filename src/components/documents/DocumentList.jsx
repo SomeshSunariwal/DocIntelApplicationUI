@@ -101,6 +101,7 @@ export default function DocumentList({
 
       return sortDirection === "desc" ? -result : result;
     });
+
   const retry = (id) =>
     setDocuments((ds) =>
       ds.map((d) =>
@@ -120,16 +121,16 @@ export default function DocumentList({
         </button>
       </div>
       <div className="flex shrink-0 gap-2 px-3.5 py-3">
-        <div className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-lg border border-slate-200 px-2.5 dark:border-slate-700">
+        <div className="flex text-[12px] h-9 min-w-0 flex-1 items-center gap-2 rounded-lg border border-slate-200 px-2.5 dark:border-slate-700">
           <Search size={16} className="shrink-0 text-slate-400" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search your documents..."
-            className="w-full min-w-0 bg-transparent text-[12px] outline-none placeholder:text-slate-400"
+            className="w-full min-w-0 bg-transparent outline-none placeholder:text-slate-400"
           />
         </div>
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1 text-[12px]">
           <div ref={sortMenuRef} className="relative">
             <button
               onClick={() => setSortOpen((v) => !v)}

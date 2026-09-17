@@ -30,7 +30,7 @@ export default function UploadPanel({ onFiles }) {
           setDrag(false);
           handleFiles([...e.dataTransfer.files]);
         }}
-        className={`flex h-[216px] flex-col items-center justify-center rounded-lg border border-dashed px-3 text-center transition ${drag ? "border-blue-500 bg-blue-50/60" : "border-blue-300"} dark:border-blue-800 dark:bg-slate-950/20`}
+        className={`flex h-54 flex-col items-center justify-center rounded-lg border border-dashed px-3 pt-4 pb-2 text-center transition ${drag ? "border-blue-500 bg-blue-50/60" : "border-blue-300"} dark:border-blue-800 dark:bg-slate-950/20`}
       >
         <CloudUpload size={42} className="mb-2 text-blue-600" />
         <div className="text-[13px] font-medium">
@@ -49,7 +49,7 @@ export default function UploadPanel({ onFiles }) {
         </div>
         <button
           onClick={() => ref.current?.click()}
-          className="flex w-full max-w-[270px] items-center justify-center gap-2 rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 py-2 text-[13px] font-medium text-white"
+          className="flex w-full max-w-[270px] items-center justify-center gap-2 rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 py-2  font-medium text-white"
         >
           <FolderOpen size={16} />
           Choose Files
