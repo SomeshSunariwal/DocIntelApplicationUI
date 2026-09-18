@@ -12,14 +12,56 @@ import { ChatContainerContent, ChatContainerRoot } from "../ui/chat-container";
 import { ScrollButton } from "../ui/scroll-button";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, Square } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { chatStreamAction } from "../apis/actions/chatStreamAction";
 
 export function PromptInputBasic() {
+  const dispatch = useDispatch();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  // Temporary in-memory chat
   const [messages, setMessages] = useState([]);
+  const [streamMessageId, setStreamMessageId] = useState(null);
+
+  const {
+    data: streamChunks,
+    loading: streamLoading,
+    error: streamError,
+  } = useSelector((state) => state.rootReducer.chatStream);
+
+  useEffect(() => {
+    if (!streamMessageId) return;
+
+    setMessages((previousMessages) =>
+      previousMessages.map((message) =>
+        message.id === streamMessageId
+          ? { ...message, content: streamChunks.join("") }
+          : message,
+      ),
+    );
+  }, [streamChunks, streamMessageId]);
+
+  useEffect(() => {
+    if (!streamMessageId || streamLoading) return;
+
+    if (streamError) {
+      setMessages((previousMessages) =>
+        previousMessages.map((message) =>
+          message.id === streamMessageId
+            ? {
+                ...message,
+                content:
+                  message.content ||
+                  `Unable to generate a response: ${streamError}`,
+              }
+            : message,
+        ),
+      );
+    }
+
+    setIsLoading(false);
+    setStreamMessageId(null);
+  }, [streamError, streamLoading, streamMessageId]);
 
   const handleSubmit = () => {
     const message = input.trim();
@@ -28,68 +70,28 @@ export function PromptInputBasic() {
       return;
     }
 
-    // Add user message
     const userMessage = {
       id: crypto.randomUUID(),
       role: "user",
       content: message,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const assistantMessage = {
+      id: crypto.randomUUID(),
+      role: "assistant",
+      content: "",
+    };
+
+    setMessages((previousMessages) => [
+      ...previousMessages,
+      userMessage,
+      assistantMessage,
+    ]);
 
     setInput("");
     setIsLoading(true);
-
-    // Simulate AI response
-    setTimeout(() => {
-      const assistantMessage = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: `
-## Hello World!
-
-This message supports **bold text**, *italics*, and other Markdown features.
-
-### Features
-
-- Bullet points
-- **Bold text**
-- *Italic text*
-- [Links](https://example.com)
-
-### Code
-
-\`\`\`js
-function hello() {
-  return "world";
-}
-\`\`\`
-
-> This is a blockquote.
-
-1. First item
-2. Second item
-3. Third item
-`,
-        sources: [
-          {
-            href: "https://www.wikipedia.org",
-            title: "Wikipedia",
-            description:
-              "Wikipedia is a free encyclopedia containing information on a wide range of topics.",
-          },
-          {
-            href: "https://github.com/ibelick/prompt-kit",
-            title: "Prompt Kit",
-            description:
-              "Customizable components for building AI applications and chat interfaces.",
-          },
-        ],
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-      setIsLoading(false);
-    }, 1200);
+    setStreamMessageId(assistantMessage.id);
+    dispatch(chatStreamAction(message));
   };
 
   const handleValueChange = (value) => {
@@ -128,7 +130,6 @@ function hello() {
                 {message.role === "assistant" && (
                   <MessageAvatar src="/avatars/ai.png" alt="AI" fallback="AI" />
                 )}
-
                 <div className="flex max-w-[80%] flex-col gap-2">
                   <MessageContent
                     markdown={message.role === "assistant"}

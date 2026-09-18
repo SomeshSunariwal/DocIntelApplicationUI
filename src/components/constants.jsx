@@ -1,11 +1,112 @@
 export const HomeEndpoint = "http://localhost:8080/api";
 
+export const Separator = "/";
+
+export const TOKEN =
+  "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lQDExLmNvbSIsImlzcyI6IkRvY3VtZW50SW50ZWxsaWdlbmNlLkNvbSIsImlhdCI6MTc4OTc0OTE4MywiZXhwIjoxNzkwMTA5MTgzfQ.QRH65STiWGcSVIb0Hs2XxTZz8D4UtYTb_rjh767RzuQ";
+
 export const Constant = {
   Home: "/",
-  Login: Home + "login",
-  SignUp: Home + "signup",
+  Login: Separator + "login",
+  SignUp: Separator + "signup",
 };
 
 export const API_URL = {
-  UPDATE_USER: "/v1/users/",
+  UPLOAD_FILES: "/users/documents",
+  GET_DOCUMENT: "/users/documents",
+  UPDATE_DOCUMENT: "/users/documents",
+  DELETE_DOCUMENT: "/users/documents",
+  GET_ALL_USER_DOCUMENTS: "/users/documents",
+  ADD_UPDATE_CONFIG: "/users/config",
+  CHAT_STREAM: "/chat",
+  SEGMENTED_SEARCH: "/users/search",
+  AI_SEARCH: "/users/generate",
+  REGISTER_USER: "/users/register",
+  DELETE_USER: "/users/delete",
+  USER_LOGIN: "/auth/login",
+};
+
+// GET /api/users/documents/{documentId}
+export const GetDocumetsActions = {
+  GET_DOCUMENTS_REQUESTED: "GET_DOCUMENTS_REQUESTED",
+  GET_DOCUMENTS_ERROR: "GET_DOCUMENTS_ERROR",
+  GET_DOCUMENTS_COMPLETED: "GET_DOCUMENTS_COMPLETED",
+};
+
+// PUT /api/users/documents/{documentId}
+export const UpdateDocumetActions = {
+  UPDATE_DOCUMENT_REQUESTED: "UPDATE_DOCUMENT_REQUESTED",
+  UPDATE_DOCUMENT_ERROR: "UPDATE_DOCUMENT_ERROR",
+  UPDATE_DOCUMENT_COMPLETED: "UPDATE_DOCUMENT_COMPLETED",
+};
+
+// DELETE /api/users/documents/{documentId}
+export const DeleteDocumentActions = {
+  DELETE_DOCUMENT_REQUESTED: "DELETE_DOCUMENT_REQUESTED",
+  DELETE_DOCUMENT_ERROR: "DELETE_DOCUMENT_ERROR",
+  DELETE_DOCUMENT_COMPLETED: "DELETE_DOCUMENT_COMPLETED",
+};
+
+// GET /api/users/documents
+export const GetUserAllDocumentsActions = {
+  GET_USER_DOCUMENTS_REQUESTED: "GET_USER_DOCUMENTS_REQUESTED",
+  GET_USER_DOCUMENTS_ERROR: "GET_USER_DOCUMENTS_ERROR",
+  GET_USER_DOCUMENTS_COMPLETED: "GET_USER_DOCUMENTS_COMPLETED",
+};
+
+// POST /api/users/documents
+export const FilesUploadActions = {
+  FILES_UPLOAD_REQUESTED: "FILES_UPLOAD_REQUESTED",
+  FILES_UPLOAD_ERROR: "FILES_UPLOAD_ERROR",
+  FILES_UPLOAD_COMPLETED: "FILES_UPLOAD_COMPLETED",
+};
+
+// POST /api/config/Add
+export const AddOrUpdateCofigActions = {
+  ADD_UPDATE_CONFIG_REQUESTED: "ADD_UPDATE_CONFIG_REQUESTED",
+  ADD_UPDATE_CONFIG_ERROR: "ADD_UPDATE_CONFIG_ERROR",
+  ADD_UPDATE_CONFIG_COMPLETED: "ADD_UPDATE_CONFIG_COMPLETED",
+};
+
+// GET /api/chat/Stream
+export const ChatStreamActions = {
+  CHAT_STREAM_REQUESTED: "CHAT_STREAM_REQUESTED",
+  CHAT_STREAM_CHUNK_RECEIVED: "CHAT_STREAM_CHUNK_RECEIVED",
+  CHAT_STREAM_ERROR: "CHAT_STREAM_ERROR",
+  CHAT_STREAM_COMPLETED: "CHAT_STREAM_COMPLETED",
+};
+
+// POST /api/users/search
+export const SegmantedSearchActions = {
+  SEGMENTED_SEARCH_REQUESTED: "SEGMENTED_SEARCH_REQUESTED",
+  SEGMENTED_SEARCH_ERROR: "SEGMENTED_SEARCH_ERROR",
+  SEGMENTED_SEARCH_COMPLETED: "SEGMENTED_SEARCH_COMPLETED",
+};
+
+// POST /api/users/generate
+export const AISearchActions = {
+  AI_SERACH_REQUESTED: "AI_SERACH_REQUESTED",
+  AI_SERACH_ERROR: "AI_SERACH_ERROR",
+  AI_SERACH_COMPLETED: "AI_SERACH_COMPLETED",
+};
+
+// POST /api/users/register
+export const RegisterUserActions = {
+  REGISTER_USER_REQUESTED: "REGISTER_USER_REQUESTED",
+  REGISTER_USER_ERROR: "REGISTER_USER_ERROR",
+  REGISTER_USER_COMPLETED: "REGISTER_USER_COMPLETED",
+};
+
+// POST /api/users/delete
+export const DeleteUserActions = {
+  DELETE_USER_REQUESTED: "DELETE_USER_REQUESTED",
+  DELETE_USER_ERROR: "DELETE_USER_ERROR",
+  DELETE_USER_COMPLETED: "DELETE_USER_COMPLETED",
+};
+
+// POST /api/auth/login.
+export const UserLoginActions = {
+  LOGIN_USER_REQUESTED: "LOGIN_USER_REQUESTED",
+  LOGIN_USER_ERROR: "LOGIN_USER_ERROR",
+  LOGIN_USER_COMPLETED: "LOGIN_USER_COMPLETED",
 };

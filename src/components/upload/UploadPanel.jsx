@@ -1,5 +1,7 @@
 import React, { useRef, useState } from "react";
 import { CloudUpload, FolderOpen } from "lucide-react";
+import { filesUploadAction } from "../apis/actions/filesUploadAction";
+import { useDispatch, useSelector } from "react-redux";
 
 const allowed = ["pdf", "doc", "docx", "txt"];
 const pills = ["PDF", "DOC", "DOCX", "TXT"];
@@ -7,16 +9,16 @@ const pills = ["PDF", "DOC", "DOCX", "TXT"];
 export default function UploadPanel({ onFiles }) {
   const ref = useRef();
   const [drag, setDrag] = useState(false);
-  const [error, setError] = useState("");
+  const dispatch = useDispatch();
+  const { error } = useSelector((state) => state.rootReducer.filesUpload);
 
   const handleFiles = (files) => {
-    setError("");
+    dispatch(filesUploadAction(files));
+
     const valid = files.filter((f) => {
       const ext = f.name.split(".").pop().toLowerCase();
       return allowed.includes(ext) && f.size <= 50 * 1024 * 1024;
     });
-    if (valid.length !== files.length)
-      setError("Unsupported type or file larger than 50MB.");
     if (valid.length) onFiles(valid);
   };
 
@@ -63,7 +65,7 @@ export default function UploadPanel({ onFiles }) {
           type="file"
           hidden
           multiple
-          accept=".pdf,.txt,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+          accept=".pdf,.txt,.doc,.docx"
           onChange={(e) => {
             handleFiles([...e.target.files]);
             e.target.value = "";

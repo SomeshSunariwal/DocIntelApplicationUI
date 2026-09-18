@@ -18,7 +18,7 @@ export default function App() {
   const [totalDocumentCount, setTotalDocumentCount] =
     useState(getDocumentTotal());
 
-  const [login, setLogin] = useState(false);
+  const [login, setLogin] = useState(true);
   const [signUp, setSignUP] = useState(false);
 
   useEffect(() => {
