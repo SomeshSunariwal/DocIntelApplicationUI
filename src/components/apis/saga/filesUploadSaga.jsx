@@ -35,10 +35,17 @@ function FileUpload(action) {
 function* fetchFilesUpload(action) {
   try {
     const fileUploadResponse = yield call(FileUpload, action);
-    yield put({
-      type: FilesUploadActions.FILES_UPLOAD_COMPLETED,
-      payload: fileUploadResponse,
-    });
+    if (fileUploadResponse.errorCode === undefined) {
+      yield put({
+        type: FilesUploadActions.FILES_UPLOAD_COMPLETED,
+        payload: fileUploadResponse,
+      });
+    } else {
+      yield put({
+        type: FilesUploadActions.FILES_UPLOAD_ERROR,
+        message: fileUploadResponse.message,
+      });
+    }
   } catch (e) {
     yield put({
       type: FilesUploadActions.FILES_UPLOAD_ERROR,
