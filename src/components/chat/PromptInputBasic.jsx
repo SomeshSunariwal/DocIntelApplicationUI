@@ -29,8 +29,6 @@ export function PromptInputBasic() {
     error: streamError,
   } = useSelector((state) => state.rootReducer.chatStream);
 
-  console.log("Stream Data -> " + streamChunks);
-
   useEffect(() => {
     if (!streamMessageId) return;
 
