@@ -10,13 +10,7 @@ export default function UploadPanel({ onFiles }) {
   const ref = useRef();
   const [drag, setDrag] = useState(false);
   const dispatch = useDispatch();
-  const { data, loading, error } = useSelector(
-    (state) => state.rootReducer.filesUpload,
-  );
-
-  console.log("Selector -> " + JSON.stringify(data));
-  console.log("Selector -> " + JSON.stringify(loading));
-  console.log("Selector -> " + JSON.stringify(error));
+  const { error } = useSelector((state) => state.rootReducer.filesUpload);
 
   const handleFiles = (files) => {
     dispatch(filesUploadAction(files));

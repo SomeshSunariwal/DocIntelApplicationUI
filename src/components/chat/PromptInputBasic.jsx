@@ -22,8 +22,14 @@ export function PromptInputBasic() {
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState([]);
   const [streamMessageId, setStreamMessageId] = useState(null);
-  const { data: streamChunks, loading: streamLoading, error: streamError } =
-    useSelector((state) => state.rootReducer.chatStream);
+
+  const {
+    data: streamChunks,
+    loading: streamLoading,
+    error: streamError,
+  } = useSelector((state) => state.rootReducer.chatStream);
+
+  console.log("Stream Data -> " + streamChunks);
 
   useEffect(() => {
     if (!streamMessageId) return;
@@ -47,7 +53,8 @@ export function PromptInputBasic() {
             ? {
                 ...message,
                 content:
-                  message.content || `Unable to generate a response: ${streamError}`,
+                  message.content ||
+                  `Unable to generate a response: ${streamError}`,
               }
             : message,
         ),
@@ -86,7 +93,7 @@ export function PromptInputBasic() {
     setInput("");
     setIsLoading(true);
     setStreamMessageId(assistantMessage.id);
-    dispatch(chatStreamAction({ prompt: message }));
+    dispatch(chatStreamAction(message));
   };
 
   const handleValueChange = (value) => {
@@ -125,7 +132,6 @@ export function PromptInputBasic() {
                 {message.role === "assistant" && (
                   <MessageAvatar src="/avatars/ai.png" alt="AI" fallback="AI" />
                 )}
-
                 <div className="flex max-w-[80%] flex-col gap-2">
                   <MessageContent
                     markdown={message.role === "assistant"}
@@ -135,7 +141,7 @@ export function PromptInputBasic() {
                         : "bg-gray-50 text-black dark:bg-gray-800 dark:text-white text-[14px]"
                     }
                   >
-                    {message.content || "Thinking..."}
+                    {message.content}
                   </MessageContent>
 
                   {message.role === "assistant" &&

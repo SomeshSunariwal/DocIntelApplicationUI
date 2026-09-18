@@ -3,7 +3,7 @@ export const HomeEndpoint = "http://localhost:8080/api";
 export const Separator = "/";
 
 export const TOKEN =
-  "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lQDExLmNvbSIsImlzcyI6IkRvY3VtZW50SW50ZWxsaWdlbmNlLkNvbSIsImlhdCI6MTc4OTcyNTA1MSwiZXhwIjoxNzg5NzI1OTUxfQ.VMjZXR-BLPWgKp0QmhZyIw89pVPPDyt-bbzlPwQUPjI";
+  "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lQDExLmNvbSIsImlzcyI6IkRvY3VtZW50SW50ZWxsaWdlbmNlLkNvbSIsImlhdCI6MTc4OTc0OTE4MywiZXhwIjoxNzkwMTA5MTgzfQ.QRH65STiWGcSVIb0Hs2XxTZz8D4UtYTb_rjh767RzuQ";
 
 export const Constant = {
   Home: "/",

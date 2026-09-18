@@ -7,10 +7,13 @@ import {
   TOKEN,
 } from "../../constants";
 
-function createChatStreamChannel() {
+function createChatStreamChannel(action) {
+  const message = action.payload;
+
   return eventChannel((emit) => {
     const controller = new AbortController();
-    const API_LINK = HomeEndpoint + API_URL.CHAT_STREAM;
+    const API_LINK =
+      HomeEndpoint + API_URL.CHAT_STREAM + `?question=${message}`;
 
     async function startStream() {
       try {
@@ -45,12 +48,7 @@ function createChatStreamChannel() {
           buffer = done ? "" : events.pop() || "";
 
           events.forEach((event) => {
-            const data = event
-              .split(/\r?\n/)
-              .filter((line) => line.startsWith("data:"))
-              .map((line) => line.replace(/^data:\s?/, ""))
-              .join("\n");
-
+            const data = event;
             if (data) emit({ type: "chunk", payload: data });
           });
 
@@ -72,8 +70,8 @@ function createChatStreamChannel() {
   });
 }
 
-function* fetchChatStream() {
-  const channel = yield call(createChatStreamChannel);
+function* fetchChatStream(action) {
+  const channel = yield call(createChatStreamChannel, action);
 
   try {
     while (true) {
