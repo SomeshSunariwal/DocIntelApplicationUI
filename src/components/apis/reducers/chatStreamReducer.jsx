@@ -8,6 +8,7 @@ export const chatStreamReducer = (state = initialState, action) => {
       return {
         ...state,
         data: [],
+        sources: [],
         loading: true,
         error: null,
       };
@@ -20,6 +21,7 @@ export const chatStreamReducer = (state = initialState, action) => {
       return {
         ...state,
         loading: false,
+        sources: action.sources,
       };
     case ChatStreamActions.CHAT_STREAM_ERROR:
       return {

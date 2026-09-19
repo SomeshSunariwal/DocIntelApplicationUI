@@ -4,13 +4,22 @@ import {
   API_URL,
   SegmantedSearchActions,
   TOKEN,
+  Question,
+  QueryParam,
+  And,
 } from "../../constants";
 
 function segmentedSearch(action) {
-  const API_LINK = HomeEndpoint + API_URL.SEGMENTED_SEARCH;
+  const query = action.payload;
+
+  let API_LINK =
+    HomeEndpoint +
+    API_URL.SEGMENTED_SEARCH +
+    Question +
+    `${QueryParam.Query}${query}`;
 
   return fetch(API_LINK, {
-    method: "POST",
+    method: "GET",
     headers: {
       Authorization: "Bearer " + TOKEN,
       "Content-Type": "application/json",

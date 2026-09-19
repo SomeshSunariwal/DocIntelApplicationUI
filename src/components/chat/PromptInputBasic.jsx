@@ -25,28 +25,94 @@ export function PromptInputBasic() {
 
   const {
     data: streamChunks,
+    sources: streamSources,
     loading: streamLoading,
     error: streamError,
   } = useSelector((state) => state.rootReducer.chatStream);
 
-  useEffect(() => {
-    if (!streamMessageId) return;
+  console.log("streamSource " + JSON.stringify(streamSources));
 
-    setMessages((previousMessages) =>
-      previousMessages.map((message) =>
+  useEffect(() => {
+    if (!streamMessageId || streamChunks.length === 0) return;
+
+    const content = streamChunks.join("");
+
+    setMessages((previousMessages) => {
+      const messageExists = previousMessages.some(
+        (message) => message.id === streamMessageId,
+      );
+
+      if (!messageExists) {
+        return [
+          ...previousMessages,
+          {
+            id: streamMessageId,
+            role: "assistant",
+            content,
+          },
+        ];
+      }
+
+      return previousMessages.map((message) =>
         message.id === streamMessageId
-          ? { ...message, content: streamChunks.join("") }
+          ? {
+              ...message,
+              content,
+              sources: [
+                {
+                  title: " Title 1",
+                  description: "Description",
+                  href: "/",
+                },
+              ],
+            }
           : message,
-      ),
-    );
+      );
+    });
   }, [streamChunks, streamMessageId]);
+
+  useEffect(() => {
+    if (!streamSources || streamSources.length === 0) return;
+
+    const sources = streamSources.map((source) => ({
+      title: source.fileName,
+      description: source.text,
+      href: "/",
+    }));
+
+    setMessages((previousMessages) => {
+      return previousMessages.map((message) =>
+        message.id === streamMessageId
+          ? {
+              ...message,
+              sources: sources,
+            }
+          : message,
+      );
+    });
+  }, [streamSources]);
 
   useEffect(() => {
     if (!streamMessageId || streamLoading) return;
 
     if (streamError) {
-      setMessages((previousMessages) =>
-        previousMessages.map((message) =>
+      setMessages((previousMessages) => {
+        const messageExists = previousMessages.some(
+          (message) => message.id === streamMessageId,
+        );
+
+        if (!messageExists) {
+          return [
+            ...previousMessages,
+            {
+              id: streamMessageId,
+              role: "assistant",
+              content: `Unable to generate a response: ${streamError}`,
+            },
+          ];
+        }
+
+        return previousMessages.map((message) =>
           message.id === streamMessageId
             ? {
                 ...message,
@@ -55,8 +121,8 @@ export function PromptInputBasic() {
                   `Unable to generate a response: ${streamError}`,
               }
             : message,
-        ),
-      );
+        );
+      });
     }
 
     setIsLoading(false);
@@ -76,21 +142,13 @@ export function PromptInputBasic() {
       content: message,
     };
 
-    const assistantMessage = {
-      id: crypto.randomUUID(),
-      role: "assistant",
-      content: "",
-    };
+    const assistantMessageId = crypto.randomUUID();
 
-    setMessages((previousMessages) => [
-      ...previousMessages,
-      userMessage,
-      assistantMessage,
-    ]);
+    setMessages((previousMessages) => [...previousMessages, userMessage]);
 
     setInput("");
     setIsLoading(true);
-    setStreamMessageId(assistantMessage.id);
+    setStreamMessageId(assistantMessageId);
     dispatch(chatStreamAction(message));
   };
 
@@ -105,7 +163,7 @@ export function PromptInputBasic() {
         ========================= */}
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <ChatContainerRoot className="h-full w-full">
-          <ChatContainerContent className="mx-auto flex w-full max-w-(--breakpoint-md) flex-col gap-6 px-4 py-6">
+          <ChatContainerContent className="mx-auto flex w-full max-w-225 flex-col gap-6 px-4 py-6">
             {messages.length === 0 && (
               <div className="flex min-h-75 items-center justify-center">
                 <div className="text-center">
@@ -164,7 +222,7 @@ export function PromptInputBasic() {
               </Message>
             ))}
 
-            {isLoading && (
+            {isLoading && streamChunks.length === 0 && (
               <Message className="justify-start">
                 <MessageAvatar src="/avatars/ai.png" alt="AI" fallback="AI" />
 

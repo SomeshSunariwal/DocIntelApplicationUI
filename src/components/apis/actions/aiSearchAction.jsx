@@ -1,8 +1,11 @@
 import { AISearchActions } from "../../constants";
 
-export const aiSearchAction = (searchTerm) => {
+export const aiSearchAction = (query, docuemntId) => {
   return {
     type: AISearchActions.AI_SERACH_REQUESTED,
-    payload: searchTerm,
+    payload: {
+      query: query,
+      documentId: docuemntId,
+    },
   };
 };

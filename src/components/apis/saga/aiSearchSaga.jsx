@@ -1,11 +1,27 @@
 import { call, put, takeEvery } from "redux-saga/effects";
-import { HomeEndpoint, API_URL, AISearchActions, TOKEN } from "../../constants";
+import {
+  HomeEndpoint,
+  API_URL,
+  AISearchActions,
+  TOKEN,
+  Question,
+  QueryParam,
+  And,
+} from "../../constants";
 
 function aiSearch(action) {
-  const API_LINK = HomeEndpoint + API_URL.AI_SEARCH;
+  const query = action.payload.query;
+  const documentId = action.payload.documentId;
+
+  let API_LINK =
+    HomeEndpoint + API_URL.AI_SEARCH + Question + `${QueryParam.Query}${query}`;
+
+  if (documentId) {
+    API_LINK = API_LINK + And + `${QueryParam.DOCUMENT_ID}${documentId}`;
+  }
 
   return fetch(API_LINK, {
-    method: "POST",
+    method: "GET",
     headers: {
       Authorization: "Bearer " + TOKEN,
       "Content-Type": "application/json",

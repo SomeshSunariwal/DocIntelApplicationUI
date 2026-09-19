@@ -3,12 +3,20 @@ export const HomeEndpoint = "http://localhost:8080/api";
 export const Separator = "/";
 
 export const TOKEN =
-  "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lQDExLmNvbSIsImlzcyI6IkRvY3VtZW50SW50ZWxsaWdlbmNlLkNvbSIsImlhdCI6MTc4OTc0OTE4MywiZXhwIjoxNzkwMTA5MTgzfQ.QRH65STiWGcSVIb0Hs2XxTZz8D4UtYTb_rjh767RzuQ";
+  "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lQDExLmNvbSIsImlzcyI6IkRvY3VtZW50SW50ZWxsaWdlbmNlLkNvbSIsImlhdCI6MTc4OTg0NzU2NywiZXhwIjoxNzkwMjA3NTY3fQ.pc4Rl-VPIrW1wJV4BUGzjsrItLp3tflEc-rJg8JY3Ys";
 
 export const Constant = {
   Home: "/",
   Login: Separator + "login",
   SignUp: Separator + "signup",
+};
+
+export const Question = "?";
+export const And = "&";
+
+export const QueryParam = {
+  DOCUMENT_ID: "documentId=",
+  Query: "query=",
 };
 
 export const API_URL = {
@@ -20,7 +28,7 @@ export const API_URL = {
   ADD_UPDATE_CONFIG: "/users/config",
   CHAT_STREAM: "/chat",
   SEGMENTED_SEARCH: "/users/search",
-  AI_SEARCH: "/users/generate",
+  AI_SEARCH: "/users/chat",
   REGISTER_USER: "/users/register",
   DELETE_USER: "/users/delete",
   USER_LOGIN: "/auth/login",
