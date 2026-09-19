@@ -5,15 +5,26 @@ import {
   API_URL,
   ChatStreamActions,
   TOKEN,
+  Question,
+  QueryParam,
+  And,
 } from "../../constants";
 
 function createChatStreamChannel(action) {
-  const message = action.payload;
+  const query = action.payload.query;
+  const documentId = action.payload.documentId;
 
   return eventChannel((emit) => {
     const controller = new AbortController();
-    const API_LINK =
-      HomeEndpoint + API_URL.CHAT_STREAM + `?question=${message}`;
+    let API_LINK =
+      HomeEndpoint +
+      API_URL.CHAT_STREAM +
+      Question +
+      `${QueryParam.Query}${query}`;
+
+    if (documentId) {
+      API_LINK = API_LINK + And + `${QueryParam.DOCUMENT_ID}${documentId}`;
+    }
 
     async function startStream() {
       try {
@@ -40,20 +51,83 @@ function createChatStreamChannel(action) {
 
         while (true) {
           const { done, value } = await reader.read();
+
           buffer += decoder.decode(value || new Uint8Array(), {
             stream: !done,
           });
 
           const events = buffer.split(/\r?\n\r?\n/);
+
           buffer = done ? "" : events.pop() || "";
 
-          events.forEach((event) => {
-            const data = event;
-            if (data) emit({ type: "chunk", payload: data });
-          });
+          for (const event of events) {
+            if (!event.trim()) {
+              continue;
+            }
+            try {
+              const jsonData = event
+                .split(/\r?\n/)
+                .filter((line) => line.startsWith("data:"))
+                .map((line) => line.slice(5))
+                .join("\n")
+                .trim();
 
+              if (!jsonData) {
+                continue;
+              }
+
+              const streamResponse = JSON.parse(jsonData);
+              if (streamResponse.type === "CHUNK") {
+                if (streamResponse.error === true) {
+                  emit({
+                    type: "error",
+                    message: streamResponse.data || "Something went wrong.",
+                  });
+
+                  return;
+                }
+
+                emit({
+                  type: "chunk",
+                  payload: streamResponse.data || "",
+                });
+
+                continue;
+              }
+
+              /*
+               * COMPLETED
+               */
+              if (streamResponse.type === "COMPLETED") {
+                if (streamResponse.success === true) {
+                  emit({
+                    type: "complete",
+                    sources: streamResponse.textSegmentResponseDTO || [],
+                  });
+                }
+                continue;
+              }
+
+              /*
+               * ERROR
+               */
+              if (streamResponse.type === "ERROR") {
+                emit({
+                  type: "error",
+                  message:
+                    streamResponse.data || "Unable to generate the response.",
+                });
+                return;
+              }
+            } catch (parseError) {
+              console.error(
+                "Error parsing SSE data:",
+                decoder.decode(value),
+                parseError,
+              );
+            }
+          }
           if (done) {
-            emit({ type: "complete" });
             return;
           }
         }
@@ -95,6 +169,7 @@ function* fetchChatStream(action) {
       if (event.type === "complete") {
         yield put({
           type: ChatStreamActions.CHAT_STREAM_COMPLETED,
+          sources: event.sources,
         });
         break;
       }
