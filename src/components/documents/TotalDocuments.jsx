@@ -1,5 +1,6 @@
 import React from "react";
 import { Database } from "lucide-react";
+
 export default function TotalDocuments({ count, size }) {
   return (
     <div className="surface flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-soft dark:bg-[#111a2d]">

@@ -5,13 +5,16 @@ import {
 } from "../data/mockData";
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const allDocuments = [...initialDocuments, ...generatedDocuments];
+
 export async function getDocuments(offset = 0, limit = 8) {
   await wait(180);
   return allDocuments.slice(offset, offset + limit);
 }
+
 export function getDocumentTotal() {
   return allDocuments.length;
 }
+
 export async function searchDocuments(query) {
   await wait(220);
   if (query.trim().length < 3) return [];
@@ -22,6 +25,7 @@ export async function searchDocuments(query) {
     (r.name + " " + r.snippet).toLowerCase().includes(q),
   );
 }
+
 export async function uploadDocument(file, onProgress) {
   for (let p = 10; p <= 100; p += 10) {
     await wait(60);

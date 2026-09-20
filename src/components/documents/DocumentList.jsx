@@ -277,7 +277,7 @@ export default function DocumentList({
                   createPortal(
                     <div
                       ref={menuRef}
-                      className="fixed z-[100] w-36 rounded-lg border border-slate-200 bg-white p-1 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+                      className="fixed z-[100] w-36 rounded-lg border text-[12px] border-slate-200 bg-white p-1 shadow-xl dark:border-slate-700 dark:bg-slate-900"
                       style={{ top: menu.top, left: menu.left }}
                       onClick={(e) => e.stopPropagation()}
                     >

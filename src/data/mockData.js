@@ -9,6 +9,7 @@ export const initialDocuments = [
     pages: 42,
     url: "/mock-files/product-requirements.pdf",
   },
+
   {
     id: "2",
     name: "Technical_Design.docx",
@@ -69,7 +70,7 @@ export const initialDocuments = [
   {
     id: "8",
     name: "Architecture_Diagram.pdf",
-    type: "pdf",
+    type: "pf",
     size: "3.6 MB",
     date: "Aug 15, 2024",
     status: "completed",
@@ -258,6 +259,7 @@ export const searchResults = [
       "... challenges in machine learning include data quality, training costs, and model maintenance.",
   },
 ];
+
 export const generatedDocuments = Array.from({ length: 18 }, (_, i) => ({
   id: `g-${i}`,
   name: `Project_Document_${String(i + 1).padStart(2, "0")}.pdf`,

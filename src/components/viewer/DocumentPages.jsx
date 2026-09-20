@@ -108,13 +108,13 @@ export default function DocumentPages({
                 style={{ width: scaledWidth, minHeight: scaledHeight }}
               >
                 <div
-                  className="txt-page-content doc-page-content absolute left-0 top-0 min-h-[842px] w-[595px] overflow-hidden text-[15px] leading-7"
+                  className="txt-page-content doc-page-content absolute left-0 top-0 min-h-[842px] w-[595px] overflow-hidden text-[12px] leading-7"
                   style={{
                     transform: `scale(${zoom / 100})`,
                     transformOrigin: "top left",
                   }}
                 >
-                  <pre className="m-0 whitespace-pre-wrap break-words font-sans text-[15px] leading-7">
+                  <pre className="m-0 whitespace-pre-wrap break-words font-sans text-[12px] leading-7">
                     {highlightPlainText(
                       content,
                       viewerSearch,

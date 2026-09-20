@@ -55,7 +55,7 @@ export default function UploadPanel({ onFiles }) {
         </div>
         <button
           onClick={() => ref.current?.click()}
-          className="flex w-full max-w-[270px] items-center justify-center gap-2 rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 py-2  font-medium text-white"
+          className="flex w-full max-w-67.5 items-center justify-center gap-2 rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 py-2  font-medium text-white"
         >
           <FolderOpen size={16} />
           Choose Files
