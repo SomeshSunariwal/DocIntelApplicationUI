@@ -154,7 +154,7 @@ export function PromptInputBasic({ documentId }) {
         CHAT MESSAGES
         ========================= */}
       <div className="relative min-h-0 flex-1 overflow-hidden">
-        <div className="absolute right-4 top-3 z-20 flex items-center text-[12px]  rounded-full border border-slate-200 bg-white/95 p-1 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
+        <div className="absolute left-4 top-3 z-20 flex items-center text-[12px]  rounded-full border border-slate-200 bg-white/95 p-1 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
           <span
             className={`pointer-events-none absolute bottom-1 top-1 w-[calc(50%-4px)] rounded-full bg-blue-600 transition-transform duration-200 ${chatMode === "static" ? "translate-x-full" : "translate-x-0"}`}
             aria-hidden="true"
