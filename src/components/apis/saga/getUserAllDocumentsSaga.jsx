@@ -41,11 +41,11 @@ function* fetchGetAllUserDocuments(action) {
   }
 }
 
-function* getAllUserDocumentsSaga() {
+function* getUserAllDocumentsSaga() {
   yield takeEvery(
     GetUserAllDocumentsActions.GET_USER_DOCUMENTS_REQUESTED,
     fetchGetAllUserDocuments,
   );
 }
 
-export default getAllUserDocumentsSaga;
+export default getUserAllDocumentsSaga;

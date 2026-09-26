@@ -3,7 +3,7 @@ import filesUploadSaga from "./filesUploadSaga";
 import getDocumentsSaga from "./getDocumentsSaga";
 import updateDocumentSaga from "./updateDocumentSaga";
 import deleteDocumentSaga from "./deleteDocumentSaga";
-import getAllUserDocumentsSaga from "./getAllUserDocumentsSaga";
+import getUserAllDocumentsSaga from "./getUserAllDocumentsSaga";
 import addOrUpdateConfigSaga from "./addOrUpdateConfigSaga";
 import chatStreamSaga from "./chatStreamSaga";
 import segmentedSearchSaga from "./segmentedSearchSaga";
@@ -18,7 +18,7 @@ export default function* rootSaga() {
     getDocumentsSaga(),
     updateDocumentSaga(),
     deleteDocumentSaga(),
-    getAllUserDocumentsSaga(),
+    getUserAllDocumentsSaga(),
     addOrUpdateConfigSaga(),
     chatStreamSaga(),
     segmentedSearchSaga(),

@@ -2,7 +2,7 @@ import { GetUserAllDocumentsActions } from "../../constants";
 
 const initialState = { data: [], loading: false, error: null };
 
-export const getAllUserDocumentsReducer = (state = initialState, action) => {
+export const getUserAllDocumentsReducer = (state = initialState, action) => {
   switch (action.type) {
     case GetUserAllDocumentsActions.GET_USER_DOCUMENTS_REQUESTED:
       return {

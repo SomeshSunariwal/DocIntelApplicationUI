@@ -16,10 +16,11 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { chatStreamAction } from "../apis/actions/chatStreamAction";
 
-export function PromptInputBasic() {
+export function PromptInputBasic({ documentId }) {
   const dispatch = useDispatch();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [chatMode, setChatMode] = useState("stream");
   const [messages, setMessages] = useState([]);
   const [streamMessageId, setStreamMessageId] = useState(null);
 
@@ -56,13 +57,6 @@ export function PromptInputBasic() {
           ? {
               ...message,
               content,
-              sources: [
-                {
-                  title: " Title 1",
-                  description: "Description",
-                  href: "/",
-                },
-              ],
             }
           : message,
       );
@@ -75,7 +69,7 @@ export function PromptInputBasic() {
     const sources = streamSources.map((source) => ({
       title: source.fileName,
       description: source.text,
-      href: "/",
+      fileType: source.fileName?.split(".").pop()?.toUpperCase() || "FILE",
     }));
 
     setMessages((previousMessages) => {
@@ -147,7 +141,7 @@ export function PromptInputBasic() {
     setInput("");
     setIsLoading(true);
     setStreamMessageId(assistantMessageId);
-    dispatch(chatStreamAction(message));
+    dispatch(chatStreamAction(message, documentId));
   };
 
   const handleValueChange = (value) => {
@@ -160,6 +154,23 @@ export function PromptInputBasic() {
         CHAT MESSAGES
         ========================= */}
       <div className="relative min-h-0 flex-1 overflow-hidden">
+        <div className="absolute right-4 top-3 z-20 flex items-center text-[12px]  rounded-full border border-slate-200 bg-white/95 p-1 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
+          <span
+            className={`pointer-events-none absolute bottom-1 top-1 w-[calc(50%-4px)] rounded-full bg-blue-600 transition-transform duration-200 ${chatMode === "static" ? "translate-x-full" : "translate-x-0"}`}
+            aria-hidden="true"
+          />
+          {["stream", "static"].map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setChatMode(mode)}
+              aria-pressed={chatMode === mode}
+              className={`relative z-10 min-w-16 rounded-full px-3 py-1.5 font-medium capitalize transition-colors ${chatMode === mode ? "text-white" : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"}`}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
         <ChatContainerRoot className="h-full w-full">
           <ChatContainerContent className="mx-auto flex w-full max-w-225 flex-col gap-6 px-4 py-6">
             {messages.length === 0 && (
@@ -204,9 +215,9 @@ export function PromptInputBasic() {
                         {message.sources.map((source, index) => (
                           <Source
                             key={`${message.id}-source-${index}`}
-                            href={source.href}
+                            fileType={source.fileType}
                           >
-                            <SourceTrigger showFavicon />
+                            <SourceTrigger />
 
                             <SourceContent
                               title={source.title}

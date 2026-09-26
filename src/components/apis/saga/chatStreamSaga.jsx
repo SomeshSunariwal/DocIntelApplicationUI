@@ -20,10 +20,11 @@ function createChatStreamChannel(action) {
       HomeEndpoint +
       API_URL.CHAT_STREAM +
       Question +
-      `${QueryParam.Query}${query}`;
+      `${QueryParam.Query}${encodeURIComponent(query)}`;
 
     if (documentId) {
-      API_LINK = API_LINK + And + `${QueryParam.DOCUMENT_ID}${documentId}`;
+      API_LINK =
+        API_LINK + And + `${QueryParam.DOCUMENT_ID}${encodeURIComponent(documentId)}`;
     }
 
     async function startStream() {

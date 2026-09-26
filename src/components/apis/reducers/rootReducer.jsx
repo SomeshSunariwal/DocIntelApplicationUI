@@ -3,7 +3,7 @@ import { filesUploadReducer } from "./filesUploadReducer";
 import { getDocumentsReducer } from "./getDocumentsReducer";
 import { updateDocumentReducer } from "./updateDocumentReducer";
 import { deleteDocumentReducer } from "./deleteDocumentReducer";
-import { getAllUserDocumentsReducer } from "./getAllUserDocumentsReducer";
+import { getUserAllDocumentsReducer } from "./getUserAllDocumentsReducer";
 import { addOrUpdateConfigReducer } from "./addOrUpdateConfigReducer";
 import { chatStreamReducer } from "./chatStreamReducer";
 import { segmentedSearchReducer } from "./segmentedSearchReducer";
@@ -17,7 +17,7 @@ const rootReducer = combineSlices({
   getDocuments: getDocumentsReducer,
   updateDocument: updateDocumentReducer,
   deleteDocument: deleteDocumentReducer,
-  getAllUserDocuments: getAllUserDocumentsReducer,
+  getUserAllDocuments: getUserAllDocumentsReducer,
   addOrUpdateConfig: addOrUpdateConfigReducer,
   chatStream: chatStreamReducer,
   segmentedSearch: segmentedSearchReducer,

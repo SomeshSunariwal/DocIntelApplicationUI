@@ -14,19 +14,21 @@ function aiSearch(action) {
   const documentId = action.payload.documentId;
 
   let API_LINK =
-    HomeEndpoint + API_URL.AI_SEARCH + Question + `${QueryParam.Query}${query}`;
+    HomeEndpoint +
+    API_URL.AI_SEARCH +
+    Question +
+    `${QueryParam.Query}${encodeURIComponent(query)}`;
 
   if (documentId) {
-    API_LINK = API_LINK + And + `${QueryParam.DOCUMENT_ID}${documentId}`;
+    API_LINK =
+      API_LINK + And + `${QueryParam.DOCUMENT_ID}${encodeURIComponent(documentId)}`;
   }
 
   return fetch(API_LINK, {
     method: "GET",
     headers: {
       Authorization: "Bearer " + TOKEN,
-      "Content-Type": "application/json",
     },
-    body: JSON.stringify(action.payload),
   })
     .then((response) => response.json())
     .catch((error) => {

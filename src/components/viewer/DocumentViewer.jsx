@@ -977,7 +977,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
   if (!doc) {
     return (
       <section className="surface flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111a2d]">
-        <PromptInputBasic />
+        <PromptInputBasic documentId={doc?.id} />
       </section>
     );
   }
@@ -1084,7 +1084,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
       case "Chat":
         return (
           <div className="h-full min-h-0 overflow-hidden">
-            <PromptInputBasic />
+            <PromptInputBasic documentId={doc?.id} />
           </div>
         );
 

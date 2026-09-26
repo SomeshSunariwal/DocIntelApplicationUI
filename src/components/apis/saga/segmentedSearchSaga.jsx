@@ -6,7 +6,6 @@ import {
   TOKEN,
   Question,
   QueryParam,
-  And,
 } from "../../constants";
 
 function segmentedSearch(action) {
@@ -16,15 +15,13 @@ function segmentedSearch(action) {
     HomeEndpoint +
     API_URL.SEGMENTED_SEARCH +
     Question +
-    `${QueryParam.Query}${query}`;
+    `${QueryParam.Query}${encodeURIComponent(query)}`;
 
   return fetch(API_LINK, {
     method: "GET",
     headers: {
       Authorization: "Bearer " + TOKEN,
-      "Content-Type": "application/json",
     },
-    body: JSON.stringify(action.payload),
   })
     .then((response) => response.json())
     .catch((error) => {
