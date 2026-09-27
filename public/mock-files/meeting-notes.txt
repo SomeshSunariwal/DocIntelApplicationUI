@@ -1,3 +1,0 @@
-Meeting Notes
-
-Challenges in machine learning include data quality, training costs, and model maintenance.

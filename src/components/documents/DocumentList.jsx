@@ -217,23 +217,18 @@ export default function DocumentList({
                     Processing...
                   </div>
                   <div className="mt-1 h-0.5 w-[105px] bg-slate-200 dark:bg-slate-700">
-                    <div className="h-full w-[45%] bg-blue-500" />
+                    <div
+                      className="h-full bg-blue-500"
+                      style={{ width: `${d.progress ?? 75}%` }}
+                    />
                   </div>
                 </>
               ) : d.status === "failed" ? (
                 <div className="mt-1 flex items-center gap-1 text-[11px] text-red-500">
                   <span>Upload failed</span>
-                  <span>•</span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      retry(d.id);
-                    }}
-                    className="font-medium"
-                  >
-                    Retry
-                  </button>
                 </div>
+              ) : d.status === "deleted" ? (
+                <div className="mt-1 text-[11px] text-slate-400">Deleted</div>
               ) : (
                 <div className="mt-1 text-[11px] text-slate-500">
                   {d.size}
@@ -277,7 +272,7 @@ export default function DocumentList({
                   createPortal(
                     <div
                       ref={menuRef}
-                      className="fixed z-[100] w-36 rounded-lg border border-slate-200 bg-white p-1 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+                      className="fixed z-[100] w-36 rounded-lg border text-[12px] border-slate-200 bg-white p-1 shadow-xl dark:border-slate-700 dark:bg-slate-900"
                       style={{ top: menu.top, left: menu.left }}
                       onClick={(e) => e.stopPropagation()}
                     >
@@ -296,17 +291,14 @@ export default function DocumentList({
               </div>
             ) : d.status === "failed" ? (
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  retry(d.id);
-                }}
+                onClick={(e) => e.stopPropagation()}
                 className="rounded-full"
               >
                 <TriangleAlert size={19} className="text-red-500" />
               </button>
-            ) : (
+            ) : d.status === "processing" || d.status === "uploading" ? (
               <LoaderCircle size={20} className="animate-spin text-blue-500" />
-            )}
+            ) : null}
           </div>
         ))}
         {loading && (

@@ -11,17 +11,30 @@ import { Source, SourceContent, SourceTrigger } from "../ui/source";
 import { ChatContainerContent, ChatContainerRoot } from "../ui/chat-container";
 import { ScrollButton } from "../ui/scroll-button";
 import { Button } from "@/components/ui/button";
-import { ArrowUp, Square } from "lucide-react";
+import { ArrowUp, Check, ChevronUp, Square } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { chatStreamAction } from "../apis/actions/chatStreamAction";
 
-export function PromptInputBasic() {
+export function PromptInputBasic({
+  documentId,
+  documentName,
+  documentVersion,
+}) {
   const dispatch = useDispatch();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [chatMode, setChatMode] = useState("stream");
   const [messages, setMessages] = useState([]);
   const [streamMessageId, setStreamMessageId] = useState(null);
+  const [versionMenuOpen, setVersionMenuOpen] = useState(false);
+  const versionCount = Math.max(0, Math.floor(Number(documentVersion) || 0));
+  const [selectedVersion, setSelectedVersion] = useState(versionCount || 1);
+
+  useEffect(() => {
+    setSelectedVersion(versionCount || 1);
+    setVersionMenuOpen(false);
+  }, [documentId, versionCount]);
 
   const {
     data: streamChunks,
@@ -30,7 +43,12 @@ export function PromptInputBasic() {
     error: streamError,
   } = useSelector((state) => state.rootReducer.chatStream);
 
-  console.log("streamSource " + JSON.stringify(streamSources));
+  useEffect(() => {
+    setInput("");
+    setIsLoading(false);
+    setMessages([]);
+    setStreamMessageId(null);
+  }, [documentId]);
 
   useEffect(() => {
     if (!streamMessageId || streamChunks.length === 0) return;
@@ -58,13 +76,6 @@ export function PromptInputBasic() {
           ? {
               ...message,
               content,
-              sources: [
-                {
-                  title: " Title 1",
-                  description: "Description",
-                  href: "/",
-                },
-              ],
             }
           : message,
       );
@@ -77,7 +88,7 @@ export function PromptInputBasic() {
     const sources = streamSources.map((source) => ({
       title: source.fileName,
       description: source.text,
-      href: "/",
+      fileType: source.fileName?.split(".").pop()?.toUpperCase() || "FILE",
     }));
 
     setMessages((previousMessages) => {
@@ -129,6 +140,7 @@ export function PromptInputBasic() {
     setStreamMessageId(null);
   }, [streamError, streamLoading, streamMessageId]);
 
+  // TODO: Include selectedVersion in the chat request so the backend uses that document version.
   const handleSubmit = () => {
     const message = input.trim();
 
@@ -149,7 +161,7 @@ export function PromptInputBasic() {
     setInput("");
     setIsLoading(true);
     setStreamMessageId(assistantMessageId);
-    dispatch(chatStreamAction(message));
+    dispatch(chatStreamAction(message, documentId));
   };
 
   const handleValueChange = (value) => {
@@ -162,6 +174,23 @@ export function PromptInputBasic() {
         CHAT MESSAGES
         ========================= */}
       <div className="relative min-h-0 flex-1 overflow-hidden">
+        <div className="absolute left-4 top-3 z-20 flex items-center text-[12px]  rounded-full border border-slate-200 bg-white/95 p-1 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
+          <span
+            className={`pointer-events-none absolute bottom-1 top-1 w-[calc(50%-4px)] rounded-full bg-blue-600 transition-transform duration-200 ${chatMode === "static" ? "translate-x-full" : "translate-x-0"}`}
+            aria-hidden="true"
+          />
+          {["stream", "static"].map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setChatMode(mode)}
+              aria-pressed={chatMode === mode}
+              className={`relative z-10 min-w-16 rounded-full px-3 py-1.5 font-medium capitalize transition-colors ${chatMode === mode ? "text-white" : "text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"}`}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
         <ChatContainerRoot className="h-full w-full">
           <ChatContainerContent className="mx-auto flex w-full max-w-225 flex-col gap-6 px-4 py-6">
             {messages.length === 0 && (
@@ -206,9 +235,9 @@ export function PromptInputBasic() {
                         {message.sources.map((source, index) => (
                           <Source
                             key={`${message.id}-source-${index}`}
-                            href={source.href}
+                            fileType={source.fileType}
                           >
-                            <SourceTrigger showFavicon />
+                            <SourceTrigger />
 
                             <SourceContent
                               title={source.title}
@@ -262,7 +291,54 @@ export function PromptInputBasic() {
           >
             <PromptInputTextarea placeholder="Ask me anything..." />
 
-            <PromptInputActions className="justify-end pt-2">
+            <PromptInputActions className="justify-between pt-2">
+              <div className="relative flex min-w-0 max-w-[75%] items-center gap-1.5 text-[12px]">
+                {versionCount > 0 && (
+                  <>
+                    <button
+                      type="button"
+                      aria-label="Select document version"
+                      aria-expanded={versionMenuOpen}
+                      onClick={() => setVersionMenuOpen((open) => !open)}
+                      className="flex shrink-0 items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                    >
+                      <span>v{selectedVersion}</span>
+                      <ChevronUp size={13} />
+                    </button>
+                    {versionMenuOpen && (
+                      <div className="absolute bottom-full left-0 z-30 mb-2 min-w-24 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+                        {Array.from({ length: versionCount }, (_, index) => {
+                          const version = index + 1;
+                          return (
+                            <button
+                              key={version}
+                              type="button"
+                              onClick={() => {
+                                setSelectedVersion(version);
+                                setVersionMenuOpen(false);
+                              }}
+                              className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-1.5 text-left text-xs hover:bg-slate-100 dark:hover:bg-slate-800 ${version === selectedVersion ? "font-semibold text-blue-600 dark:text-blue-400" : "text-slate-600 dark:text-slate-300"}`}
+                            >
+                              v{version}
+                              {version === selectedVersion && (
+                                <Check size={13} aria-hidden="true" />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                )}
+                {documentName && (
+                  <div
+                    className="flex min-w-0 items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                    title={documentName}
+                  >
+                    <span className="truncate">{documentName}</span>
+                  </div>
+                )}
+              </div>
               <PromptInputAction
                 tooltip={isLoading ? "Stop generation" : "Send message"}
               >

@@ -4,6 +4,9 @@ import { memo, useId, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import { CodeBlock, CodeBlockCode } from "./code-block";
 
 function parseMarkdownIntoBlocks(markdown) {
@@ -54,7 +57,7 @@ const MemoizedMarkdownBlock = memo(
   function MarkdownBlock({ content, components = INITIAL_COMPONENTS }) {
     return (
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkBreaks]}
+        remarkPlugins={[remarkGfm, remarkBreaks, remarkMath, rehypeKatex]}
         components={components}
       >
         {content}

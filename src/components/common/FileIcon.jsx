@@ -1,23 +1,28 @@
 import React from "react";
+import pdfIcon from "../../../resources/pdf.png";
+import docxIcon from "../../../resources/docx.png";
+import txtIcon from "../../../resources/txt.png";
+
 export default function FileIcon({ type = "pdf", size = "md" }) {
   const t = type.toLowerCase();
   const map = {
-    pdf: ["PDF", "bg-[#ef262b]"],
-    doc: ["W", "bg-[#1e78d7]"],
-    docx: ["W", "bg-[#1e78d7]"],
-    txt: ["≡", "bg-[#8793a6]"],
-    xls: ["X", "bg-[#159a62]"],
-    xlsx: ["X", "bg-[#159a62]"],
-    ppt: ["P", "bg-[#e87522]"],
-    pptx: ["P", "bg-[#e87522]"],
+    pdf: pdfIcon,
+    doc: docxIcon,
+    docx: docxIcon,
+    txt: txtIcon,
+    xls: txtIcon,
+    xlsx: txtIcon,
+    ppt: txtIcon,
+    pptx: txtIcon,
   };
-  const [label, bg] = map[t] || ["≡", "bg-[#8793a6]"];
-  const cls = size === "sm" ? "h-8 w-8 text-[9px]" : "h-9 w-9 text-[9px]";
+  const iconSize = size === "sm" ? 30 : 36;
   return (
-    <div
-      className={`${cls} ${bg} flex shrink-0 items-center justify-center rounded-[5px] font-bold text-white shadow-sm`}
-    >
-      {label}
-    </div>
+    <img
+      src={map[t] || txtIcon}
+      width={iconSize}
+      height={iconSize}
+      alt={`${t} file`}
+      className={`${size === "sm" ? "h-8 w-8" : "h-9 w-9"} shrink-0 object-contain`}
+    />
   );
 }

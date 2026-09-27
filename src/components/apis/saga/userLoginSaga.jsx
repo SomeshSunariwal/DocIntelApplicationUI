@@ -1,10 +1,5 @@
 import { call, put, takeEvery } from "redux-saga/effects";
-import {
-  HomeEndpoint,
-  API_URL,
-  UserLoginActions,
-  TOKEN,
-} from "../../constants";
+import { HomeEndpoint, API_URL, UserLoginActions } from "../../constants";
 
 function userLogin(action) {
   const API_LINK = HomeEndpoint + API_URL.USER_LOGIN;
@@ -26,6 +21,7 @@ function* fetchUserLogin(action) {
   try {
     const response = yield call(userLogin, action);
     if (response.errorCode === undefined) {
+      localStorage.setItem("token", response.token);
       yield put({
         type: UserLoginActions.LOGIN_USER_COMPLETED,
         payload: response,

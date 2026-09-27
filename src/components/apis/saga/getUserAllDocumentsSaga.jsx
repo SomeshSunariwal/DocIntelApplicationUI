@@ -3,7 +3,7 @@ import {
   HomeEndpoint,
   API_URL,
   GetUserAllDocumentsActions,
-  TOKEN,
+  getAuthToken,
 } from "../../constants";
 
 function getAllUserDocuments() {
@@ -11,7 +11,7 @@ function getAllUserDocuments() {
 
   return fetch(API_LINK, {
     method: "GET",
-    headers: { Authorization: "Bearer " + TOKEN },
+    headers: { Authorization: "Bearer " + getAuthToken() },
   })
     .then((response) => response.json())
     .catch((error) => {
@@ -41,11 +41,11 @@ function* fetchGetAllUserDocuments(action) {
   }
 }
 
-function* getAllUserDocumentsSaga() {
+function* getUserAllDocumentsSaga() {
   yield takeEvery(
     GetUserAllDocumentsActions.GET_USER_DOCUMENTS_REQUESTED,
     fetchGetAllUserDocuments,
   );
 }
 
-export default getAllUserDocumentsSaga;
+export default getUserAllDocumentsSaga;

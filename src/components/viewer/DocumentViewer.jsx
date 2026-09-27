@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Sparkles, Download, Link, MoreVertical } from "lucide-react";
 import FileIcon from "../common/FileIcon";
 import { PromptInputBasic } from "../chat/PromptInputBasic";
@@ -16,8 +17,18 @@ import ViewerToolbar from "./ViewerToolbar";
 import ThumbnailRail from "./ThumbnailRail";
 import DocumentPages from "./DocumentPages";
 import TabBar from "./TabBar";
+import { summerizeDocumentAction } from "../apis/actions/summerizeDocumentAction";
+import { Markdown } from "../ui/markdown";
 
 export default function DocumentViewer({ doc, jumpPage, onClose }) {
+  const dispatch = useDispatch();
+  const {
+    data: summaryChunks,
+    loading: summaryLoading,
+    error: summaryError,
+  } = useSelector((state) => state.rootReducer.summerizeDocument);
+  const [requestedSummaryDocumentId, setRequestedSummaryDocumentId] =
+    useState(null);
   const [tab, setTab] = useState("Chat");
   const [page, setPage] = useState(jumpPage || 1);
   const [zoom, setZoom] = useState(100);
@@ -55,6 +66,18 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
   const programmaticScrollTimerRef = useRef(null);
   const viewerMenuButtonRef = useRef(null);
   const viewerMenuRef = useRef(null);
+
+  const selectTab = (nextTab) => {
+    setTab(nextTab);
+    if (
+      nextTab === "Summary" &&
+      doc?.id &&
+      requestedSummaryDocumentId !== doc.id
+    ) {
+      dispatch(summerizeDocumentAction(doc.id));
+      setRequestedSummaryDocumentId(doc.id);
+    }
+  };
 
   useEffect(() => {
     if (!menu) return;
@@ -173,6 +196,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
   useEffect(() => {
     setPage(jumpPage || 1);
     setTab("Chat");
+    setRequestedSummaryDocumentId(null);
     setMenu(false);
     setZoom(100);
     setViewMode("all");
@@ -977,7 +1001,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
   if (!doc) {
     return (
       <section className="surface flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111a2d]">
-        <PromptInputBasic />
+        <PromptInputBasic documentId={doc?.id} documentName="All Documents" />
       </section>
     );
   }
@@ -1084,20 +1108,46 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
       case "Chat":
         return (
           <div className="h-full min-h-0 overflow-hidden">
-            <PromptInputBasic />
+            <PromptInputBasic
+              documentId={doc?.id}
+              documentName={doc?.name}
+              documentVersion={doc?.version}
+            />
+          </div>
+        );
+
+      case "Summary":
+        return (
+          <div className="h-full min-h-0 overflow-auto p-6 sm:p-8">
+            <div className="mx-auto min-h-[320px] w-full max-w-3xl rounded-2xl bg-slate-100 p-6 dark:bg-slate-800/70">
+              {summaryChunks.length > 0 ? (
+                <div className="min-w-0 break-words text-sm leading-7 text-slate-700 dark:text-slate-200">
+                  <Markdown>{summaryChunks.join("")}</Markdown>
+                </div>
+              ) : summaryError ? (
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  {summaryError}
+                </p>
+              ) : (
+                <div
+                  className="space-y-3"
+                  aria-label="Generating summary"
+                  aria-live="polite"
+                >
+                  {Array.from({ length: 10 }, (_, index) => (
+                    <div
+                      key={index}
+                      className={`h-3 animate-pulse rounded-full bg-slate-300/80 dark:bg-slate-600/80 ${index === 9 ? "w-2/5" : index % 3 === 0 ? "w-full" : index % 3 === 1 ? "w-11/12" : "w-4/5"}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         );
 
       default:
-        return (
-          <div className="h-full min-h-0 flex-1 overflow-auto p-8">
-            <h2 className="text-xl font-bold">{tab}</h2>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-500">
-              Mock {tab.toLowerCase()} generated from the selected document.
-              This area is ready to be connected to your RAG backend.
-            </p>
-          </div>
-        );
+        return <div className="h-full min-h-0 flex-1 overflow-auto p-8"></div>;
     }
   };
 
@@ -1121,7 +1171,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
         <div className="ml-auto flex items-center gap-2 text-[12px]">
           <button
             className="flex items-center gap-2 rounded-lg bg-linear-to-r from-violet-500 to-blue-500 px-4 py-2 font-semibold text-white"
-            onClick={() => setTab("Chat")}
+            onClick={() => selectTab("Chat")}
           >
             <Sparkles size={15} />
             Ask AI
@@ -1175,7 +1225,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
       <TabBar
         tabs={["Chat", "Viewer", "Summary"]}
         activeTab={tab}
-        onTabChange={setTab}
+        onTabChange={selectTab}
       />
 
       <div className="min-h-0 flex-1 overflow-hidden">{renderTab()}</div>

@@ -1,20 +1,14 @@
 import React, { useRef, useState } from "react";
 import { CloudUpload, FolderOpen } from "lucide-react";
-import { filesUploadAction } from "../apis/actions/filesUploadAction";
-import { useDispatch, useSelector } from "react-redux";
 
 const allowed = ["pdf", "doc", "docx", "txt"];
 const pills = ["PDF", "DOC", "DOCX", "TXT"];
 
-export default function UploadPanel({ onFiles }) {
+export default function UploadPanel({ onFiles, uploadError }) {
   const ref = useRef();
   const [drag, setDrag] = useState(false);
-  const dispatch = useDispatch();
-  const { error } = useSelector((state) => state.rootReducer.filesUpload);
 
   const handleFiles = (files) => {
-    dispatch(filesUploadAction(files));
-
     const valid = files.filter((f) => {
       const ext = f.name.split(".").pop().toLowerCase();
       return allowed.includes(ext) && f.size <= 50 * 1024 * 1024;
@@ -55,7 +49,7 @@ export default function UploadPanel({ onFiles }) {
         </div>
         <button
           onClick={() => ref.current?.click()}
-          className="flex w-full max-w-[270px] items-center justify-center gap-2 rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 py-2  font-medium text-white"
+          className="flex w-full max-w-67.5 items-center justify-center gap-2 rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 py-2  font-medium text-white"
         >
           <FolderOpen size={16} />
           Choose Files
@@ -74,7 +68,9 @@ export default function UploadPanel({ onFiles }) {
         <div className="mt-2 text-[10px] text-slate-500">
           Max file size 50MB
         </div>
-        {error && <div className="mt-1 text-[10px] text-red-500">{error}</div>}
+        {uploadError && (
+          <div className="mt-1 text-[10px] text-red-500">{uploadError}</div>
+        )}
       </div>
     </section>
   );

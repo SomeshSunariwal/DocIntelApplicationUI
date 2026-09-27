@@ -11,7 +11,7 @@ import {
   Moon,
   MessageSquareText,
 } from "lucide-react";
-export default function Navbar({ dark, setDark, setLogin }) {
+export default function Navbar({ dark, setDark, onLogout }) {
   return (
     <header className="nav flex h-[66px] shrink-0 items-center border-b border-slate-200 bg-white px-7 shadow-[0_1px_8px_rgba(30,64,175,.04)] dark:border-slate-800 dark:bg-[#0e1728]">
       <div className="flex w-[330px] items-center gap-3">
@@ -52,7 +52,7 @@ export default function Navbar({ dark, setDark, setLogin }) {
             <div className="text-[13px] font-semibold">Somesh UI</div>
             <div className="text-[11px] text-slate-500">Free Plan</div>
           </div>
-          <ProfileMenu setLogin={setLogin} />
+          <ProfileMenu onLogout={onLogout} />
         </div>
       </div>
     </header>
@@ -70,7 +70,7 @@ function Nav({ icon: Icon, label, active }) {
   );
 }
 
-function ProfileMenu({ setLogin }) {
+function ProfileMenu({ onLogout }) {
   const [open, setOpen] = React.useState(false);
   return (
     <div className="relative">
@@ -94,7 +94,7 @@ function ProfileMenu({ setLogin }) {
             className="profile-dropdown-item profile-dropdown-logout"
             onClick={() => {
               setOpen(false);
-              setLogin(false);
+              onLogout();
             }}
           >
             Logout

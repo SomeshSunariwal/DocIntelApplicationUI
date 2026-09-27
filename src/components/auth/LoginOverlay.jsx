@@ -1,23 +1,30 @@
 import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { ArrowRight, Eye, EyeOff, LockKeyhole, UserRound } from "lucide-react";
+import { userLoginAction } from "../apis/actions/userLoginAction";
 
-const DEMO_USERNAME = "admin";
-const DEMO_PASSWORD = "admin";
-
-export default function LoginOverlay({ setLogin, setSignUP }) {
-  const [username, setUsername] = useState("");
+export default function LoginOverlay({ onLogin, onSignup }) {
+  const dispatch = useDispatch();
+  const {
+    data: loginData,
+    loading,
+    error: loginError,
+  } = useSelector((state) => state.rootReducer.userLogin);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (loginData?.token && localStorage.getItem("token") === loginData.token) {
+      onLogin();
+    }
+  }, [loginData, onLogin]);
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    if (username === DEMO_USERNAME && password === DEMO_PASSWORD) {
-      setError("");
-      setLogin(true);
-      return;
-    }
-    setError("Invalid username or password. Try admin / admin.");
+    setError("");
+    dispatch(userLoginAction({ username: email.trim(), passphrase: password }));
   };
 
   return (
@@ -48,20 +55,21 @@ export default function LoginOverlay({ setLogin, setSignUP }) {
         <p className="login-subtitle">Sign in to continue to your workspace</p>
 
         <form onSubmit={handleSubmit}>
-          <label className="login-label" htmlFor="login-username">
-            Username
+          <label className="login-label" htmlFor="login-email">
+            Email
           </label>
           <div className="login-input-wrap">
             <UserRound size={20} strokeWidth={1.8} />
             <input
-              id="login-username"
-              value={username}
+              id="login-email"
+              type="email"
+              value={email}
               onChange={(e) => {
-                setUsername(e.target.value);
+                setEmail(e.target.value);
                 setError("");
               }}
-              placeholder="Enter your username"
-              autoComplete="username"
+              placeholder="Enter your email"
+              autoComplete="email"
               autoFocus
             />
           </div>
@@ -101,10 +109,12 @@ export default function LoginOverlay({ setLogin, setSignUP }) {
             </button>
           </div>
 
-          {error && <p className="login-error">{error}</p>}
+          {(error || loginError) && (
+            <p className="login-error">{error || loginError}</p>
+          )}
 
-          <button className="login-submit" type="submit">
-            <span>Login</span>
+          <button className="login-submit" type="submit" disabled={loading}>
+            <span>{loading ? "Signing in…" : "Login"}</span>
             <ArrowRight size={21} />
           </button>
         </form>
@@ -124,7 +134,7 @@ export default function LoginOverlay({ setLogin, setSignUP }) {
 
         <p className="login-signup">
           Don't have an account?{" "}
-          <button type="button" onClick={() => setSignUP(true)}>
+          <button type="button" onClick={onSignup}>
             Sign up
           </button>
         </p>

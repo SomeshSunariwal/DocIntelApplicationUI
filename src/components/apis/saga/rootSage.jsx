@@ -3,7 +3,7 @@ import filesUploadSaga from "./filesUploadSaga";
 import getDocumentsSaga from "./getDocumentsSaga";
 import updateDocumentSaga from "./updateDocumentSaga";
 import deleteDocumentSaga from "./deleteDocumentSaga";
-import getAllUserDocumentsSaga from "./getAllUserDocumentsSaga";
+import getUserAllDocumentsSaga from "./getUserAllDocumentsSaga";
 import addOrUpdateConfigSaga from "./addOrUpdateConfigSaga";
 import chatStreamSaga from "./chatStreamSaga";
 import segmentedSearchSaga from "./segmentedSearchSaga";
@@ -11,6 +11,7 @@ import aiSearchSaga from "./aiSearchSaga";
 import registerUserSaga from "./registerUserSaga";
 import deleteUserSaga from "./deleteUserSaga";
 import userLoginSaga from "./userLoginSaga";
+import summerizeDocumentSaga from "./summerizeDocumentSaga";
 
 export default function* rootSaga() {
   yield all([
@@ -18,7 +19,7 @@ export default function* rootSaga() {
     getDocumentsSaga(),
     updateDocumentSaga(),
     deleteDocumentSaga(),
-    getAllUserDocumentsSaga(),
+    getUserAllDocumentsSaga(),
     addOrUpdateConfigSaga(),
     chatStreamSaga(),
     segmentedSearchSaga(),
@@ -26,5 +27,6 @@ export default function* rootSaga() {
     registerUserSaga(),
     deleteUserSaga(),
     userLoginSaga(),
+    summerizeDocumentSaga(),
   ]);
 }

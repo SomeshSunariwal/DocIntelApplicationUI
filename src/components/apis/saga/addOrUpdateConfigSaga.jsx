@@ -3,7 +3,7 @@ import {
   HomeEndpoint,
   API_URL,
   AddOrUpdateCofigActions,
-  TOKEN,
+  getAuthToken,
 } from "../../constants";
 
 function addOrUpdateConfig(action) {
@@ -12,7 +12,7 @@ function addOrUpdateConfig(action) {
   return fetch(API_LINK, {
     method: "POST",
     headers: {
-      Authorization: "Bearer " + TOKEN,
+      Authorization: "Bearer " + getAuthToken(),
       "Content-Type": "application/json",
     },
     body: JSON.stringify(action.payload),
