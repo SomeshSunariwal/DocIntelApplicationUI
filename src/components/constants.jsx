@@ -3,7 +3,9 @@ export const HomeEndpoint = "http://localhost:8080/api";
 export const Separator = "/";
 
 export const getAuthToken = () =>
-  typeof localStorage === "undefined" ? "" : localStorage.getItem("token") || "";
+  typeof localStorage === "undefined"
+    ? ""
+    : localStorage.getItem("token") || "";
 
 export const Constant = {
   Home: "/",
@@ -33,6 +35,7 @@ export const API_URL = {
   REGISTER_USER: "/users/register",
   DELETE_USER: "/users/delete",
   USER_LOGIN: "/auth/login",
+  USER_VERIFY: "/auth/verify",
   SUMMERIZE_DOCUMENT: "/users/documents",
 };
 
@@ -119,6 +122,12 @@ export const UserLoginActions = {
   LOGIN_USER_REQUESTED: "LOGIN_USER_REQUESTED",
   LOGIN_USER_ERROR: "LOGIN_USER_ERROR",
   LOGIN_USER_COMPLETED: "LOGIN_USER_COMPLETED",
+};
+
+export const UserVerifyActions = {
+  USER_VERIFY_REQUESTED: "USER_VERIFY_REQUESTED",
+  USER_VERIFY_COMPLETED: "USER_VERIFY_COMPLETED",
+  USER_VERIFY_ERROR: "USER_VERIFY_ERROR",
 };
 
 // Get /api/users/documents/{documentId}/summery.
