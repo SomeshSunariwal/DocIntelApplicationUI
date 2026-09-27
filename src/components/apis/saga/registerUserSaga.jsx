@@ -3,7 +3,6 @@ import {
   HomeEndpoint,
   API_URL,
   RegisterUserActions,
-  TOKEN,
 } from "../../constants";
 
 function registerUser(action) {

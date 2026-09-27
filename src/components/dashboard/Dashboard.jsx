@@ -69,10 +69,11 @@ const mapApiDocument = (document) => {
     progress: ["UPLOADED", "PROCESSING"].includes(apiStatus) ? 75 : undefined,
     pages: Number(document.pages || document.chunks) || 1,
     url: document.URI || document.uri || document.url || "",
+    version: document.version || 1,
   };
 };
 
-export default function Dashboard({ setLogin }) {
+export default function Dashboard({ onLogout }) {
   const [dark, setDark] = useState(false);
   const [documents, setDocuments] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
@@ -178,6 +179,7 @@ export default function Dashboard({ setLogin }) {
           progress: 0,
           pages: 1,
           url: "",
+          version: 1,
         };
         setDocuments((ds) => [temp, ...ds]);
       }
@@ -197,6 +199,7 @@ export default function Dashboard({ setLogin }) {
     }
   };
 
+  // TODO: Implement document pagination and return whether another page was loaded.
   const loadMore = useCallback(async () => false, []);
 
   useEffect(() => {
@@ -246,7 +249,7 @@ export default function Dashboard({ setLogin }) {
 
   return (
     <div className="app-shell flex h-screen min-h-0 flex-col overflow-hidden bg-[#f4f8fe] text-[#101a3d] dark:bg-[#0b1220] dark:text-slate-100">
-      <Navbar dark={dark} setDark={setDark} setLogin={setLogin} />
+      <Navbar dark={dark} setDark={setDark} onLogout={onLogout} />
       <main className="app-main grid min-h-0 flex-1 grid-cols-[348px_minmax(0,1fr)] gap-4 overflow-hidden px-7 py-3.5">
         <aside className="sidebar-grid grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden">
           <UploadPanel onFiles={addFiles} uploadError={uploadError} />

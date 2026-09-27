@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Search, FileText, Files, Heading, X, Sparkles } from "lucide-react";
 import FileIcon from "../common/FileIcon";
-import useDebounce from "../../hooks/useDebounce";
+import useDebounce from "../hooks/useDebounce";
 import { useDispatch, useSelector } from "react-redux";
 import { segmentedSearchAction } from "../apis/actions/segmentedSearchAction";
 import { aiSearchAction } from "../apis/actions/aiSearchAction";
@@ -175,7 +175,13 @@ export default function GlobalSearch({ onResult }) {
                   className={`mt-2 flex w-full items-center gap-3 rounded-lg border-t border-slate-100 px-3 py-3 text-left text-[13px] dark:border-slate-800 ${category === "Generated" ? "bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300" : "text-slate-700 dark:text-slate-300"} ${generatedReady ? "hover:bg-slate-50 dark:hover:bg-slate-800" : "cursor-wait opacity-70"}`}
                 >
                   <Sparkles size={18} />
-                  <span className={aiLoading ? "animate-[generated-text-shimmer_1.6s_linear_infinite] bg-[linear-gradient(90deg,#8b5cf6_0%,#ffffff_45%,#8b5cf6_100%)] bg-[length:200%_100%] bg-clip-text text-transparent" : ""}>
+                  <span
+                    className={
+                      aiLoading
+                        ? "animate-[generated-text-shimmer_1.6s_linear_infinite] bg-[linear-gradient(90deg,#8b5cf6_0%,#ffffff_45%,#8b5cf6_100%)] bg-[length:200%_100%] bg-clip-text text-transparent"
+                        : ""
+                    }
+                  >
                     Generated
                   </span>
                 </button>
@@ -184,9 +190,13 @@ export default function GlobalSearch({ onResult }) {
             <div className="thin-scroll min-w-0 flex-1 overflow-y-auto px-3">
               {category === "Generated" ? (
                 aiLoading ? (
-                  <div className="flex h-40 items-center justify-center"><Loader /></div>
+                  <div className="flex h-40 items-center justify-center">
+                    <Loader />
+                  </div>
                 ) : aiError ? (
-                  <div className="p-8 text-center text-sm text-red-500">{aiError}</div>
+                  <div className="p-8 text-center text-sm text-red-500">
+                    {aiError}
+                  </div>
                 ) : (
                   <div className="m-4 whitespace-pre-wrap rounded-lg bg-slate-100 p-4 text-sm leading-6 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
                     <strong>Response:</strong> {aiResponse?.result}

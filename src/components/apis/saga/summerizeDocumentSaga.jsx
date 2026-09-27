@@ -3,29 +3,23 @@ import { call, put, take, takeEvery } from "redux-saga/effects";
 import {
   HomeEndpoint,
   API_URL,
-  ChatStreamActions,
+  SummerizeDocumentActions,
   getAuthToken,
-  Question,
-  QueryParam,
-  And,
+  Constant,
+  Separator,
 } from "../../constants";
 
-function createChatStreamChannel(action) {
-  const query = action.payload.query;
-  const documentId = action.payload.documentId;
+function createSummerizeDocumentChannel(action) {
+  const documentId = action.payload;
 
   return eventChannel((emit) => {
     const controller = new AbortController();
     let API_LINK =
       HomeEndpoint +
-      API_URL.CHAT_STREAM +
-      Question +
-      `${QueryParam.Query}${encodeURIComponent(query)}`;
-
-    if (documentId) {
-      API_LINK =
-        API_LINK + And + `${QueryParam.DOCUMENT_ID}${encodeURIComponent(documentId)}`;
-    }
+      API_URL.SUMMERIZE_DOCUMENT +
+      Separator +
+      encodeURIComponent(documentId) +
+      Constant.SUMMERIZE;
 
     async function startStream() {
       try {
@@ -84,7 +78,6 @@ function createChatStreamChannel(action) {
                     type: "error",
                     message: streamResponse.data || "Something went wrong.",
                   });
-
                   return;
                 }
 
@@ -92,7 +85,6 @@ function createChatStreamChannel(action) {
                   type: "chunk",
                   payload: streamResponse.data || "",
                 });
-
                 continue;
               }
 
@@ -145,8 +137,8 @@ function createChatStreamChannel(action) {
   });
 }
 
-function* fetchChatStream(action) {
-  const channel = yield call(createChatStreamChannel, action);
+function* fetchSummerizeDocument(action) {
+  const channel = yield call(createSummerizeDocumentChannel, action);
 
   try {
     while (true) {
@@ -154,14 +146,14 @@ function* fetchChatStream(action) {
 
       if (event.type === "chunk") {
         yield put({
-          type: ChatStreamActions.CHAT_STREAM_CHUNK_RECEIVED,
+          type: SummerizeDocumentActions.SUMMERIZE_DOCUMENTS_CHUNK_RECEIVED,
           payload: event.payload,
         });
       }
 
       if (event.type === "error") {
         yield put({
-          type: ChatStreamActions.CHAT_STREAM_ERROR,
+          type: SummerizeDocumentActions.SUMMERIZE_DOCUMENTS_ERROR,
           message: event.message,
         });
         break;
@@ -169,7 +161,7 @@ function* fetchChatStream(action) {
 
       if (event.type === "complete") {
         yield put({
-          type: ChatStreamActions.CHAT_STREAM_COMPLETED,
+          type: SummerizeDocumentActions.SUMMERIZE_DOCUMENTS_COMPLETED,
           sources: event.sources,
         });
         break;
@@ -180,8 +172,11 @@ function* fetchChatStream(action) {
   }
 }
 
-function* chatStreamSaga() {
-  yield takeEvery(ChatStreamActions.CHAT_STREAM_REQUESTED, fetchChatStream);
+function* summerizeDocumentSaga() {
+  yield takeEvery(
+    SummerizeDocumentActions.SUMMERIZE_DOCUMENTS_REQUESTED,
+    fetchSummerizeDocument,
+  );
 }
 
-export default chatStreamSaga;
+export default summerizeDocumentSaga;

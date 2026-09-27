@@ -3,7 +3,7 @@ import {
   HomeEndpoint,
   API_URL,
   FilesUploadActions,
-  TOKEN,
+  getAuthToken,
 } from "../../constants";
 
 function FileUpload(action) {
@@ -15,12 +15,11 @@ function FileUpload(action) {
   });
 
   const API_LINK = HomeEndpoint + API_URL.UPLOAD_FILES;
-  // const token = JSON.parse(localStorage.getItem("login")) ?? TOKEN;
 
   return fetch(API_LINK, {
     method: "POST",
     headers: {
-      Authorization: "Bearer " + TOKEN,
+      Authorization: "Bearer " + getAuthToken(),
     },
     body: formData,
   })

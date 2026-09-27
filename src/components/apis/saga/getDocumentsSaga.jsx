@@ -3,7 +3,7 @@ import {
   HomeEndpoint,
   API_URL,
   GetDocumetsActions,
-  TOKEN,
+  getAuthToken,
 } from "../../constants";
 
 function getDocument(action) {
@@ -13,7 +13,7 @@ function getDocument(action) {
   return fetch(API_LINK, {
     method: "GET",
     headers: {
-      Authorization: "Bearer " + TOKEN,
+      Authorization: "Bearer " + getAuthToken(),
     },
   })
     .then((response) => response.json())

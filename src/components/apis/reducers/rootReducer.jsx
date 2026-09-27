@@ -11,6 +11,7 @@ import { aiSearchReducer } from "./aiSearchReducer";
 import { registerUserReducer } from "./registerUserReducer";
 import { deleteUserReducer } from "./deleteUserReducer";
 import { userLoginReducer } from "./userLoginReducer";
+import { summerizeDocumentReducer } from "./summarizeDocumentReducer";
 
 const rootReducer = combineSlices({
   filesUpload: filesUploadReducer,
@@ -25,6 +26,7 @@ const rootReducer = combineSlices({
   registerUser: registerUserReducer,
   deleteUser: deleteUserReducer,
   userLogin: userLoginReducer,
+  summerizeDocument: summerizeDocumentReducer,
 });
 
 export default rootReducer;

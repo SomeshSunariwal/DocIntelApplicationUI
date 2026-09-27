@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ArrowRight,
   Eye,
@@ -8,7 +8,7 @@ import {
   UserRound,
 } from "lucide-react";
 
-export default function SignupOverlay({ setLogin, setSignUP }) {
+export default function SignupOverlay({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showRePassword, setShowRePassword] = useState(false);
   const [error, setError] = useState("");
@@ -177,7 +177,7 @@ export default function SignupOverlay({ setLogin, setSignUP }) {
 
         <p className="login-signup">
           Already a user?{" "}
-          <button type="button" onClick={() => setSignUP(false)}>
+          <button type="button" onClick={onLogin}>
             Sign in
           </button>
         </p>

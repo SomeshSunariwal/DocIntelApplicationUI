@@ -3,7 +3,7 @@ import {
   HomeEndpoint,
   API_URL,
   DeleteUserActions,
-  TOKEN,
+  getAuthToken,
 } from "../../constants";
 
 function deleteUser(action) {
@@ -12,7 +12,7 @@ function deleteUser(action) {
   return fetch(API_LINK, {
     method: "DELETE",
     headers: {
-      Authorization: "Bearer " + TOKEN,
+      Authorization: "Bearer " + getAuthToken(),
       "Content-Type": "application/json",
     },
     body: JSON.stringify(action.payload),

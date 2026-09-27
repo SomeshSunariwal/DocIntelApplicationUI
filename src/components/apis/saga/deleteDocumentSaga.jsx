@@ -3,7 +3,7 @@ import {
   HomeEndpoint,
   API_URL,
   DeleteDocumentActions,
-  TOKEN,
+  getAuthToken,
 } from "../../constants";
 
 function deleteDocument(action) {
@@ -11,7 +11,7 @@ function deleteDocument(action) {
 
   return fetch(API_LINK, {
     method: "DELETE",
-    headers: { Authorization: "Bearer " + TOKEN },
+    headers: { Authorization: "Bearer " + getAuthToken() },
   })
     .then((response) => response.json())
     .catch((error) => {

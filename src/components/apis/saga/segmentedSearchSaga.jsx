@@ -3,7 +3,7 @@ import {
   HomeEndpoint,
   API_URL,
   SegmantedSearchActions,
-  TOKEN,
+  getAuthToken,
   Question,
   QueryParam,
 } from "../../constants";
@@ -20,7 +20,7 @@ function segmentedSearch(action) {
   return fetch(API_LINK, {
     method: "GET",
     headers: {
-      Authorization: "Bearer " + TOKEN,
+      Authorization: "Bearer " + getAuthToken(),
     },
   })
     .then((response) => response.json())

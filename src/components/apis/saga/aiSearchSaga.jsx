@@ -3,7 +3,7 @@ import {
   HomeEndpoint,
   API_URL,
   AISearchActions,
-  TOKEN,
+  getAuthToken,
   Question,
   QueryParam,
   And,
@@ -27,7 +27,7 @@ function aiSearch(action) {
   return fetch(API_LINK, {
     method: "GET",
     headers: {
-      Authorization: "Bearer " + TOKEN,
+      Authorization: "Bearer " + getAuthToken(),
     },
   })
     .then((response) => response.json())

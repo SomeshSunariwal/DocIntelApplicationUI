@@ -3,7 +3,7 @@ import {
   HomeEndpoint,
   API_URL,
   UpdateDocumetActions,
-  TOKEN,
+  getAuthToken,
 } from "../../constants";
 
 function updateDocument(action) {
@@ -13,7 +13,7 @@ function updateDocument(action) {
   return fetch(API_LINK, {
     method: "PUT",
     headers: {
-      Authorization: "Bearer " + TOKEN,
+      Authorization: "Bearer " + getAuthToken(),
       "Content-Type": "application/json",
     },
     body: JSON.stringify(document),

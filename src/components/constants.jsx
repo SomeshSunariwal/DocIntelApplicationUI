@@ -2,13 +2,14 @@ export const HomeEndpoint = "http://localhost:8080/api";
 
 export const Separator = "/";
 
-export const TOKEN =
-  "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lQDExLmNvbSIsImlzcyI6IkRvY3VtZW50SW50ZWxsaWdlbmNlLkNvbSIsImlhdCI6MTc5MDQzNjYzNiwiZXhwIjoxNzkwNzk2NjM2fQ.qmKqhAeYBXB4_AbLft8E2yGTpOrcWbjz2oKSf-s5oqQ";
+export const getAuthToken = () =>
+  typeof localStorage === "undefined" ? "" : localStorage.getItem("token") || "";
 
 export const Constant = {
   Home: "/",
   Login: Separator + "login",
   SignUp: Separator + "signup",
+  SUMMERIZE: Separator + "summery",
 };
 
 export const Question = "?";
@@ -32,6 +33,7 @@ export const API_URL = {
   REGISTER_USER: "/users/register",
   DELETE_USER: "/users/delete",
   USER_LOGIN: "/auth/login",
+  SUMMERIZE_DOCUMENT: "/users/documents",
 };
 
 // GET /api/users/documents/{documentId}
@@ -117,4 +119,12 @@ export const UserLoginActions = {
   LOGIN_USER_REQUESTED: "LOGIN_USER_REQUESTED",
   LOGIN_USER_ERROR: "LOGIN_USER_ERROR",
   LOGIN_USER_COMPLETED: "LOGIN_USER_COMPLETED",
+};
+
+// Get /api/users/documents/{documentId}/summery.
+export const SummerizeDocumentActions = {
+  SUMMERIZE_DOCUMENTS_REQUESTED: "SUMMERIZE_DOCUMENTS_REQUESTED",
+  SUMMERIZE_DOCUMENTS_CHUNK_RECEIVED: "SUMMERIZE_DOCUMENTS_CHUNK_RECEIVED",
+  SUMMERIZE_DOCUMENTS_ERROR: "SUMMERIZE_DOCUMENTS_ERROR",
+  SUMMERIZE_DOCUMENTS_COMPLETED: "SUMMERIZE_DOCUMENTS_COMPLETED",
 };

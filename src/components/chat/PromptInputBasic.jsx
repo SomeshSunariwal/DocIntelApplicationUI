@@ -11,18 +11,30 @@ import { Source, SourceContent, SourceTrigger } from "../ui/source";
 import { ChatContainerContent, ChatContainerRoot } from "../ui/chat-container";
 import { ScrollButton } from "../ui/scroll-button";
 import { Button } from "@/components/ui/button";
-import { ArrowUp, Square } from "lucide-react";
+import { ArrowUp, Check, ChevronUp, Square } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { chatStreamAction } from "../apis/actions/chatStreamAction";
 
-export function PromptInputBasic({ documentId }) {
+export function PromptInputBasic({
+  documentId,
+  documentName,
+  documentVersion,
+}) {
   const dispatch = useDispatch();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [chatMode, setChatMode] = useState("stream");
   const [messages, setMessages] = useState([]);
   const [streamMessageId, setStreamMessageId] = useState(null);
+  const [versionMenuOpen, setVersionMenuOpen] = useState(false);
+  const versionCount = Math.max(0, Math.floor(Number(documentVersion) || 0));
+  const [selectedVersion, setSelectedVersion] = useState(versionCount || 1);
+
+  useEffect(() => {
+    setSelectedVersion(versionCount || 1);
+    setVersionMenuOpen(false);
+  }, [documentId, versionCount]);
 
   const {
     data: streamChunks,
@@ -30,6 +42,13 @@ export function PromptInputBasic({ documentId }) {
     loading: streamLoading,
     error: streamError,
   } = useSelector((state) => state.rootReducer.chatStream);
+
+  useEffect(() => {
+    setInput("");
+    setIsLoading(false);
+    setMessages([]);
+    setStreamMessageId(null);
+  }, [documentId]);
 
   useEffect(() => {
     if (!streamMessageId || streamChunks.length === 0) return;
@@ -121,6 +140,7 @@ export function PromptInputBasic({ documentId }) {
     setStreamMessageId(null);
   }, [streamError, streamLoading, streamMessageId]);
 
+  // TODO: Include selectedVersion in the chat request so the backend uses that document version.
   const handleSubmit = () => {
     const message = input.trim();
 
@@ -271,7 +291,54 @@ export function PromptInputBasic({ documentId }) {
           >
             <PromptInputTextarea placeholder="Ask me anything..." />
 
-            <PromptInputActions className="justify-end pt-2">
+            <PromptInputActions className="justify-between pt-2">
+              <div className="relative flex min-w-0 max-w-[75%] items-center gap-1.5 text-[12px]">
+                {versionCount > 0 && (
+                  <>
+                    <button
+                      type="button"
+                      aria-label="Select document version"
+                      aria-expanded={versionMenuOpen}
+                      onClick={() => setVersionMenuOpen((open) => !open)}
+                      className="flex shrink-0 items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                    >
+                      <span>v{selectedVersion}</span>
+                      <ChevronUp size={13} />
+                    </button>
+                    {versionMenuOpen && (
+                      <div className="absolute bottom-full left-0 z-30 mb-2 min-w-24 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+                        {Array.from({ length: versionCount }, (_, index) => {
+                          const version = index + 1;
+                          return (
+                            <button
+                              key={version}
+                              type="button"
+                              onClick={() => {
+                                setSelectedVersion(version);
+                                setVersionMenuOpen(false);
+                              }}
+                              className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-1.5 text-left text-xs hover:bg-slate-100 dark:hover:bg-slate-800 ${version === selectedVersion ? "font-semibold text-blue-600 dark:text-blue-400" : "text-slate-600 dark:text-slate-300"}`}
+                            >
+                              v{version}
+                              {version === selectedVersion && (
+                                <Check size={13} aria-hidden="true" />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                )}
+                {documentName && (
+                  <div
+                    className="flex min-w-0 items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                    title={documentName}
+                  >
+                    <span className="truncate">{documentName}</span>
+                  </div>
+                )}
+              </div>
               <PromptInputAction
                 tooltip={isLoading ? "Stop generation" : "Send message"}
               >
