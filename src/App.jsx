@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Navigate,
   Route,
@@ -9,57 +10,47 @@ import {
 import LoginOverlay from "./components/auth/LoginOverlay";
 import SignupOverlay from "./components/auth/SignupOverlay";
 import Dashboard from "./components/dashboard/dashboard";
-import { API_URL, HomeEndpoint } from "./components/constants";
+import { userVerifyAction } from "./components/apis/actions/userVerifyAction";
 
 const TOKEN_STORAGE_KEY = "token";
 
-function tokenIsUnexpired(token) {
-  try {
-    const payload = JSON.parse(
-      atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")),
-    );
-    return typeof payload.exp === "number" && payload.exp * 1000 > Date.now();
-  } catch {
-    return false;
-  }
-}
-
 export default function App() {
   const [authState, setAuthState] = useState("checking");
+  const dispatch = useDispatch();
+  const { data: userVerifyResponse, error: userVerifyError } = useSelector(
+    (state) => state.rootReducer.userVerify,
+  );
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    let cancelled = false;
     const token = localStorage.getItem(TOKEN_STORAGE_KEY);
 
-    if (!token || !tokenIsUnexpired(token)) {
+    if (!token) {
       localStorage.removeItem(TOKEN_STORAGE_KEY);
       setAuthState("signed-out");
-      return undefined;
+      return;
     }
 
-    fetch(`${HomeEndpoint}${API_URL.GET_ALL_USER_DOCUMENTS}`, {
-      method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Stored session is no longer valid");
-        const body = await response.json();
-        if (body?.errorCode !== undefined) {
-          throw new Error(body.message || "Stored session is no longer valid");
-        }
-        if (!cancelled) setAuthState("signed-in");
-      })
-      .catch(() => {
-        localStorage.removeItem(TOKEN_STORAGE_KEY);
-        if (!cancelled) setAuthState("signed-out");
-      });
+    dispatch(userVerifyAction());
+  }, [dispatch]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  useEffect(() => {
+    if (typeof userVerifyResponse?.validate !== "boolean") return;
+
+    if (userVerifyResponse.validate) {
+      setAuthState("signed-in");
+      return;
+    }
+
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    setAuthState("signed-out");
+  }, [userVerifyResponse]);
+
+  useEffect(() => {
+    if (!userVerifyError) return;
+    setAuthState("signed-out");
+  }, [userVerifyError]);
 
   useEffect(() => {
     if (
@@ -85,7 +76,7 @@ export default function App() {
 
   const handleLogin = () => {
     const savedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
-    if (!savedToken || !tokenIsUnexpired(savedToken)) return;
+    if (!savedToken) return;
     setAuthState("signed-in");
     navigate("/", { replace: true });
   };

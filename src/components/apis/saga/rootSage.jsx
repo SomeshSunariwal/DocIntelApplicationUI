@@ -12,6 +12,7 @@ import registerUserSaga from "./registerUserSaga";
 import deleteUserSaga from "./deleteUserSaga";
 import userLoginSaga from "./userLoginSaga";
 import summerizeDocumentSaga from "./summerizeDocumentSaga";
+import userVerifySaga from "./userVerifySaga";
 
 export default function* rootSaga() {
   yield all([
@@ -28,5 +29,6 @@ export default function* rootSaga() {
     deleteUserSaga(),
     userLoginSaga(),
     summerizeDocumentSaga(),
+    userVerifySaga(),
   ]);
 }
