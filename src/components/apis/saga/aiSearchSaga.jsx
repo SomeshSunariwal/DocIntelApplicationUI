@@ -12,6 +12,7 @@ import {
 function aiSearch(action) {
   const query = action.payload.query;
   const documentId = action.payload.documentId;
+  const version = action.payload.version;
 
   let API_LINK =
     HomeEndpoint +
@@ -22,6 +23,9 @@ function aiSearch(action) {
   if (documentId) {
     API_LINK =
       API_LINK + And + `${QueryParam.DOCUMENT_ID}${encodeURIComponent(documentId)}`;
+  }
+  if (documentId && version !== undefined && version !== null) {
+    API_LINK += And + `version=${encodeURIComponent(version)}`;
   }
 
   return fetch(API_LINK, {

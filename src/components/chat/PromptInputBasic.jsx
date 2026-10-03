@@ -11,10 +11,13 @@ import { Source, SourceContent, SourceTrigger } from "../ui/source";
 import { ChatContainerContent, ChatContainerRoot } from "../ui/chat-container";
 import { ScrollButton } from "../ui/scroll-button";
 import { Button } from "@/components/ui/button";
-import { ArrowUp, Check, ChevronUp, Square } from "lucide-react";
+import { ArrowUp, Check, ChevronUp, Copy, Square } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { chatStreamAction } from "../apis/actions/chatStreamAction";
+import { aiSearchAction } from "../apis/actions/aiSearchAction";
+import agentAvatar from "../../../resources/agent.png";
+import userAvatar from "../../../resources/user.png";
 
 export function PromptInputBasic({
   documentId,
@@ -27,6 +30,8 @@ export function PromptInputBasic({
   const [chatMode, setChatMode] = useState("stream");
   const [messages, setMessages] = useState([]);
   const [streamMessageId, setStreamMessageId] = useState(null);
+  const [staticMessageId, setStaticMessageId] = useState(null);
+  const [copiedMessageId, setCopiedMessageId] = useState(null);
   const [versionMenuOpen, setVersionMenuOpen] = useState(false);
   const versionCount = Math.max(0, Math.floor(Number(documentVersion) || 0));
   const [selectedVersion, setSelectedVersion] = useState(versionCount || 1);
@@ -42,13 +47,65 @@ export function PromptInputBasic({
     loading: streamLoading,
     error: streamError,
   } = useSelector((state) => state.rootReducer.chatStream);
+  const {
+    data: staticSearchResponse,
+    loading: staticSearchLoading,
+    error: staticSearchError,
+  } = useSelector((state) => state.rootReducer.aiSearch);
 
   useEffect(() => {
     setInput("");
     setIsLoading(false);
     setMessages([]);
     setStreamMessageId(null);
+    setStaticMessageId(null);
   }, [documentId]);
+
+  useEffect(() => {
+    if (!staticMessageId || staticSearchLoading) return;
+
+    const segments = Array.isArray(staticSearchResponse)
+      ? staticSearchResponse
+      : staticSearchResponse?.textSegmentResponseDTOList || [];
+    const sources = segments.map((segment) => ({
+      title: segment.fileName || "Document source",
+      description: segment.text || "",
+      fileType: segment.fileName?.split(".").pop()?.toUpperCase() || "FILE",
+    }));
+    const content = staticSearchError
+      ? `Unable to generate a response: ${staticSearchError}`
+      : typeof staticSearchResponse?.result === "string" &&
+          staticSearchResponse.result.trim()
+        ? staticSearchResponse.result
+        : segments.length
+          ? segments
+              .map(
+                (segment) =>
+                  `**${segment.fileName || "Document source"}${segment.pageNumber ? ` — Page ${segment.pageNumber}` : ""}**\n\n${segment.text || ""}`,
+              )
+              .join("\n\n")
+          : staticSearchResponse?.answer ||
+            staticSearchResponse?.response ||
+            staticSearchResponse?.message ||
+            "No matching document content found.";
+
+    setMessages((previousMessages) => [
+      ...previousMessages,
+      {
+        id: staticMessageId,
+        role: "assistant",
+        content,
+        sources,
+      },
+    ]);
+    setIsLoading(false);
+    setStaticMessageId(null);
+  }, [
+    staticMessageId,
+    staticSearchLoading,
+    staticSearchError,
+    staticSearchResponse,
+  ]);
 
   useEffect(() => {
     if (!streamMessageId || streamChunks.length === 0) return;
@@ -159,12 +216,33 @@ export function PromptInputBasic({
 
     setInput("");
     setIsLoading(true);
-    setStreamMessageId(assistantMessageId);
-    dispatch(chatStreamAction(message, documentId, selectedVersion));
+    if (chatMode === "static") {
+      setStreamMessageId(null);
+      setStaticMessageId(assistantMessageId);
+      dispatch(aiSearchAction(message, documentId, selectedVersion));
+    } else {
+      setStaticMessageId(null);
+      setStreamMessageId(assistantMessageId);
+      dispatch(chatStreamAction(message, documentId, selectedVersion));
+    }
   };
 
   const handleValueChange = (value) => {
     setInput(value);
+  };
+
+  const copyMessage = async (message) => {
+    try {
+      await navigator.clipboard.writeText(message.content || "");
+      setCopiedMessageId(message.id);
+      window.setTimeout(() => {
+        setCopiedMessageId((current) =>
+          current === message.id ? null : current,
+        );
+      }, 1500);
+    } catch {
+      setCopiedMessageId(null);
+    }
   };
 
   return (
@@ -214,7 +292,12 @@ export function PromptInputBasic({
                 }
               >
                 {message.role === "assistant" && (
-                  <MessageAvatar src="/avatars/ai.png" alt="AI" fallback="AI" />
+                  <MessageAvatar
+                    src={agentAvatar}
+                    alt="AI"
+                    fallback="AI"
+                    className="mt-1 ring-1 ring-slate-200 dark:ring-[#505050]"
+                  />
                 )}
                 <div className="flex max-w-[80%] flex-col gap-2">
                   <MessageContent
@@ -246,11 +329,41 @@ export function PromptInputBasic({
                         ))}
                       </div>
                     )}
+
+                  <div
+                    className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => copyMessage(message)}
+                      className="inline-flex h-6 w-6 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-[#383838] dark:hover:text-slate-100"
+                      aria-label={
+                        copiedMessageId === message.id
+                          ? "Message copied"
+                          : "Copy message"
+                      }
+                      title={copiedMessageId === message.id ? "Copied" : "Copy"}
+                    >
+                      {copiedMessageId === message.id ? (
+                        <Check size={12} />
+                      ) : (
+                        <Copy size={12} />
+                      )}
+                    </button>
+                  </div>
                 </div>
+                {message.role === "user" && (
+                  <MessageAvatar
+                    src={userAvatar}
+                    alt="You"
+                    fallback="You"
+                    className="mt-1 ring-1 ring-slate-200 dark:ring-[#505050]"
+                  />
+                )}
               </Message>
             ))}
 
-            {isLoading && streamChunks.length === 0 && (
+            {isLoading && (staticMessageId || streamChunks.length === 0) && (
               <Message className="justify-start">
                 <MessageAvatar src="/avatars/ai.png" alt="AI" fallback="AI" />
 

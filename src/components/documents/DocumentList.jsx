@@ -25,6 +25,7 @@ export default function DocumentList({
   const [loading, setLoading] = useState(false);
   const [q, setQ] = useState("");
   const [menu, setMenu] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [sortBy, setSortBy] = useState(null);
   const [sortOpen, setSortOpen] = useState(false);
   const [sortDirection, setSortDirection] = useState("asc");
@@ -32,11 +33,18 @@ export default function DocumentList({
   const loadingRef = useRef(false);
   const menuButtonRefs = useRef(new Map());
   const menuRef = useRef(null);
+  const menuCloseTimerRef = useRef(null);
+
+  const closeMenu = useCallback(() => {
+    setMenuOpen(false);
+    window.clearTimeout(menuCloseTimerRef.current);
+    menuCloseTimerRef.current = window.setTimeout(() => setMenu(null), 200);
+  }, []);
 
   const handleScroll = useCallback(
     async (event) => {
       const el = event.currentTarget;
-      if (menu) setMenu(null);
+      if (menu) closeMenu();
       if (loadingRef.current || !hasMorePages) return;
       const remaining = el.scrollHeight - el.scrollTop - el.clientHeight;
       if (remaining > 96) return;
@@ -51,7 +59,7 @@ export default function DocumentList({
         setLoading(false);
       }
     },
-    [hasMorePages, onLoadMore],
+    [hasMorePages, onLoadMore, menu, closeMenu],
   );
 
   useEffect(() => {
@@ -62,7 +70,7 @@ export default function DocumentList({
           !button?.contains(e.target) &&
           !menuRef.current?.contains(e.target)
         ) {
-          setMenu(null);
+          closeMenu();
         }
       }
       if (sortOpen && !sortMenuRef.current?.contains(e.target)) {
@@ -71,7 +79,12 @@ export default function DocumentList({
     };
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [menu, sortOpen]);
+  }, [menu, sortOpen, closeMenu]);
+
+  useEffect(
+    () => () => window.clearTimeout(menuCloseTimerRef.current),
+    [],
+  );
 
   const shown = [...documents]
     .filter((d) => d.name.toLowerCase().includes(q.toLowerCase()))
@@ -276,7 +289,7 @@ export default function DocumentList({
                   onClick={(e) => {
                     e.stopPropagation();
                     if (menu?.id === d.id) {
-                      setMenu(null);
+                      closeMenu();
                       return;
                     }
                     const rect = e.currentTarget.getBoundingClientRect();
@@ -290,7 +303,9 @@ export default function DocumentList({
                       rect.bottom + gap,
                       window.innerHeight - 8,
                     );
+                    window.clearTimeout(menuCloseTimerRef.current);
                     setMenu({ id: d.id, top, left });
+                    setMenuOpen(true);
                   }}
                   ref={(node) => {
                     if (node) menuButtonRefs.current.set(d.id, node);
@@ -305,14 +320,15 @@ export default function DocumentList({
                   createPortal(
                     <div
                       ref={menuRef}
-                      className="fixed z-[100] w-36 rounded-lg border text-[12px] border-slate-200 bg-white p-1 shadow-xl dark:border-[#414141] dark:bg-[#303030]"
+                      data-state={menuOpen ? "open" : "closed"}
+                      className="document-actions-menu fixed z-[100] w-36 overflow-hidden rounded-lg border border-slate-200 bg-white p-1 text-[12px] shadow-xl dark:border-[#414141] dark:bg-[#303030]"
                       style={{ top: menu.top, left: menu.left }}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <MenuItem
                         label="Open"
                         onClick={() => {
-                          setMenu(null);
+                          closeMenu();
                           onSelect(d.id, 1);
                         }}
                       />

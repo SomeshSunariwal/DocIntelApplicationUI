@@ -96,17 +96,19 @@ const mapApiDocument = (document, parentDocument = null) => {
 };
 
 export default function Dashboard({ onLogout }) {
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(true);
   const [documents, setDocuments] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [jumpPage, setJumpPage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadSubmitted, setUploadSubmitted] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsMounted, setSettingsMounted] = useState(false);
   const [hasMoreDocuments, setHasMoreDocuments] = useState(true);
   const dispatch = useDispatch();
   const nextPageRef = useRef(1);
   const loadMoreResolverRef = useRef(null);
+  const settingsCloseTimerRef = useRef(null);
 
   const {
     data: documentResponse,
@@ -129,6 +131,26 @@ export default function Dashboard({ onLogout }) {
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
+
+  useEffect(
+    () => () => window.clearTimeout(settingsCloseTimerRef.current),
+    [],
+  );
+
+  const openSettings = () => {
+    window.clearTimeout(settingsCloseTimerRef.current);
+    setSettingsMounted(true);
+    setSettingsOpen(true);
+  };
+
+  const closeSettings = () => {
+    setSettingsOpen(false);
+    window.clearTimeout(settingsCloseTimerRef.current);
+    settingsCloseTimerRef.current = window.setTimeout(
+      () => setSettingsMounted(false),
+      200,
+    );
+  };
 
   useEffect(() => {
     dispatch(getUserAllDocumentsAction({ page: 0 }));
@@ -333,11 +355,12 @@ export default function Dashboard({ onLogout }) {
         dark={dark}
         setDark={setDark}
         onLogout={onLogout}
-        onSettingsClick={() => setSettingsOpen(true)}
+        onSettingsClick={openSettings}
       />
-      {settingsOpen && (
+      {settingsMounted && (
         <ConfigModal
-          onClose={() => setSettingsOpen(false)}
+          open={settingsOpen}
+          onClose={closeSettings}
           onSave={(config) => dispatch(addOrUpdateConfigAction(config))}
           loading={configLoading}
           error={configError}

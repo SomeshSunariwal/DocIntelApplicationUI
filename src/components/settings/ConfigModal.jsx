@@ -1,20 +1,36 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, X } from "lucide-react";
+import localAIIcon from "../../../resources/localai.png";
+import openAIIcon from "../../../resources/openai.png";
+import ollamaIcon from "../../../resources/ollama.png";
 
 const PROVIDERS = [
-  { value: "OLLAMA", description: "Run models on your Ollama host." },
-  { value: "OPENAI", description: "Connect to the OpenAI API." },
-  { value: "LOCAL", description: "Use a local OpenAI-compatible endpoint." },
+  {
+    value: "OLLAMA",
+    description: "Run models on your Ollama host.",
+    icon: ollamaIcon,
+  },
+  {
+    value: "OPENAI",
+    description: "Connect to the OpenAI API.",
+    icon: openAIIcon,
+  },
+  {
+    value: "LOCAL",
+    description: "Use a local OpenAI-compatible endpoint.",
+    icon: localAIIcon,
+  },
 ];
 
 const DEFAULT_CONFIG = {
   type: "LOCAL",
-  modelName: "llama-3.2-3b-instruct",
-  baseURL: "http://127.0.0.1:1234/v1",
+  modelName: "",
+  baseURL: "",
   apiKey: "",
 };
 
 export default function ConfigModal({
+  open,
   onClose,
   onSave,
   loading,
@@ -57,7 +73,8 @@ export default function ConfigModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="config-modal-title"
-        className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-[#414141] dark:bg-[#303030]"
+        data-state={open ? "open" : "closed"}
+        className="settings-dialog w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-[#414141] dark:bg-[#303030]"
       >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
@@ -97,7 +114,8 @@ export default function ConfigModal({
                     );
                     const step = event.key === "ArrowDown" ? 1 : -1;
                     const nextIndex =
-                      (currentIndex + step + PROVIDERS.length) % PROVIDERS.length;
+                      (currentIndex + step + PROVIDERS.length) %
+                      PROVIDERS.length;
                     setConfig((current) => ({
                       ...current,
                       type: PROVIDERS[nextIndex].value,
@@ -110,15 +128,25 @@ export default function ConfigModal({
                 className="group flex w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-left outline-none transition hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-[#505050] dark:bg-[#383838] dark:hover:border-[#666]"
               >
                 <span className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-[11px] font-bold text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">
-                    {config.type.slice(0, 2)}
-                  </span>
+                  <img
+                    src={
+                      PROVIDERS.find(
+                        (provider) => provider.value === config.type,
+                      )?.icon
+                    }
+                    alt=""
+                    className="h-9 w-9 rounded-lg object-cover ring-1 ring-black/5 dark:ring-white/10"
+                  />
                   <span>
                     <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
                       {config.type}
                     </span>
                     <span className="mt-0.5 block text-xs font-normal text-slate-500 dark:text-slate-400">
-                      {PROVIDERS.find((provider) => provider.value === config.type)?.description}
+                      {
+                        PROVIDERS.find(
+                          (provider) => provider.value === config.type,
+                        )?.description
+                      }
                     </span>
                   </span>
                 </span>
@@ -152,9 +180,11 @@ export default function ConfigModal({
                         className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2.5 text-left transition ${selected ? "bg-blue-50 dark:bg-[#3b3b3b]" : "hover:bg-slate-50 dark:hover:bg-[#383838]"}`}
                       >
                         <span className="flex items-center gap-3">
-                          <span className={`flex h-8 w-8 items-center justify-center rounded-lg text-[11px] font-bold ${selected ? "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300" : "bg-slate-100 text-slate-600 dark:bg-[#414141] dark:text-slate-300"}`}>
-                            {provider.value.slice(0, 2)}
-                          </span>
+                          <img
+                            src={provider.icon}
+                            alt=""
+                            className="h-10 w-10 rounded-lg object-cover ring-1 ring-black/5 dark:ring-white/10"
+                          />
                           <span>
                             <span className="block text-sm font-medium text-slate-800 dark:text-slate-100">
                               {provider.value}
@@ -164,7 +194,12 @@ export default function ConfigModal({
                             </span>
                           </span>
                         </span>
-                        {selected && <Check size={16} className="text-blue-600 dark:text-blue-300" />}
+                        {selected && (
+                          <Check
+                            size={16}
+                            className="text-blue-600 dark:text-blue-300"
+                          />
+                        )}
                       </button>
                     );
                   })}
@@ -180,6 +215,7 @@ export default function ConfigModal({
               value={config.modelName}
               onChange={updateField}
               required
+              placeholder="llama-3.2-3b-instruct"
               className={fieldClassName}
             />
           </label>
@@ -192,6 +228,7 @@ export default function ConfigModal({
               value={config.baseURL}
               onChange={updateField}
               required
+              placeholder="http://127.0.0.1:1234/v1"
               className={fieldClassName}
             />
           </label>
@@ -204,6 +241,7 @@ export default function ConfigModal({
               value={config.apiKey}
               onChange={updateField}
               autoComplete="off"
+              placeholder="sk-xxxxxxxxxxxxxxx"
               className={fieldClassName}
             />
           </label>

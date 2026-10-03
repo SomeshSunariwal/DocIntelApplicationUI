@@ -1118,7 +1118,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
 
       case "Summary":
         return (
-          <div className="h-full min-h-0 overflow-auto p-6 sm:p-8">
+          <div className="thin-scroll h-full min-h-0 overflow-auto p-6 sm:p-8">
             <div className="mx-auto min-h-[320px] w-full max-w-3xl rounded-2xl bg-slate-100 p-6 dark:bg-[#383838]">
               {summaryChunks.length > 0 ? (
                 <div className="min-w-0 break-words text-sm leading-7 text-slate-700 dark:text-slate-200">

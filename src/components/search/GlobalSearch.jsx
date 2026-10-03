@@ -29,6 +29,7 @@ export default function GlobalSearch({ onResult }) {
   const ref = useRef();
 
   const debounced = useDebounce(query, 500);
+  const canAsk = query.trim().length >= 3;
   useEffect(() => {
     if (debounced.trim().length < 3) {
       setLoading(false);
@@ -120,7 +121,7 @@ export default function GlobalSearch({ onResult }) {
   return (
     <div ref={ref} className="relative z-50">
       <div className="surface rounded-xl border border-slate-200 bg-white p-3.5 shadow-soft dark:bg-[#303030]">
-        <div className="flex gap-2">
+          <div className="flex gap-2">
           <div className="flex h-11 text-[12px] flex-1 items-center gap-3 rounded-lg border border-blue-400 bg-white px-3 shadow-[0_0_0_2px_rgba(59,130,246,.06)] dark:bg-[#383838]">
             <Search size={22} className="text-blue-600" />
             <input
@@ -134,21 +135,33 @@ export default function GlobalSearch({ onResult }) {
               className="w-full bg-transparent  outline-none"
               placeholder="Search across your documents..."
             />
+            {query.length > 0 && (
+              <button
+                type="button"
+                aria-label="Clear search"
+                onClick={() => {
+                  setQuery("");
+                  setOpen(false);
+                }}
+              >
+                <X size={17} className="text-blue-600" />
+              </button>
+            )}
+          </div>
+          <div
+            className={`shrink-0 transition-[width] duration-200 ease-out ${canAsk ? "w-[91px]" : "w-0"}`}
+            aria-hidden={!canAsk}
+          >
             <button
-              onClick={() => {
-                setQuery("");
-                setOpen(false);
-              }}
+              type="button"
+              onClick={submitSearch}
+              tabIndex={canAsk ? 0 : -1}
+              className={`ask-button-shimmer relative flex h-11 w-[91px] shrink-0 origin-right items-center justify-center gap-2 rounded-lg px-4 text-[13px] font-semibold text-white transition-transform duration-200 ease-out ${canAsk ? "scale-x-100" : "scale-x-0"}`}
             >
-              <X size={17} className="text-blue-600" />
+              <Sparkles size={15} />
+              Ask
             </button>
           </div>
-          <button
-            onClick={submitSearch}
-            className="h-11 w-[112px] rounded-lg bg-gradient-to-r from-indigo-600 to-blue-600 text-[13px] font-semibold text-white"
-          >
-            Search
-          </button>
         </div>
       </div>
       {open && query.trim().length >= 3 && (
