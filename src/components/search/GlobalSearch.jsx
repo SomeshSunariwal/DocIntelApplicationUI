@@ -29,6 +29,7 @@ export default function GlobalSearch({ onResult }) {
   const ref = useRef();
 
   const debounced = useDebounce(query, 500);
+  const canAsk = query.trim().length >= 3;
   useEffect(() => {
     if (debounced.trim().length < 3) {
       setLoading(false);
@@ -119,9 +120,9 @@ export default function GlobalSearch({ onResult }) {
 
   return (
     <div ref={ref} className="relative z-50">
-      <div className="surface rounded-xl border border-slate-200 bg-white p-3.5 shadow-soft dark:bg-[#111a2d]">
-        <div className="flex gap-2">
-          <div className="flex h-11 text-[12px] flex-1 items-center gap-3 rounded-lg border border-blue-400 bg-white px-3 shadow-[0_0_0_2px_rgba(59,130,246,.06)] dark:bg-[#0d1627]">
+      <div className="surface rounded-xl border border-slate-200 bg-white p-3.5 shadow-soft dark:bg-[#303030]">
+          <div className="flex gap-2">
+          <div className="flex h-11 text-[12px] flex-1 items-center gap-3 rounded-lg border border-blue-400 bg-white px-3 shadow-[0_0_0_2px_rgba(59,130,246,.06)] dark:bg-[#383838]">
             <Search size={22} className="text-blue-600" />
             <input
               value={query}
@@ -134,36 +135,48 @@ export default function GlobalSearch({ onResult }) {
               className="w-full bg-transparent  outline-none"
               placeholder="Search across your documents..."
             />
+            {query.length > 0 && (
+              <button
+                type="button"
+                aria-label="Clear search"
+                onClick={() => {
+                  setQuery("");
+                  setOpen(false);
+                }}
+              >
+                <X size={17} className="text-blue-600" />
+              </button>
+            )}
+          </div>
+          <div
+            className={`shrink-0 transition-[width] duration-200 ease-out ${canAsk ? "w-[91px]" : "w-0"}`}
+            aria-hidden={!canAsk}
+          >
             <button
-              onClick={() => {
-                setQuery("");
-                setOpen(false);
-              }}
+              type="button"
+              onClick={submitSearch}
+              tabIndex={canAsk ? 0 : -1}
+              className={`ask-button-shimmer relative flex h-11 w-[91px] shrink-0 origin-right items-center justify-center gap-2 rounded-lg px-4 text-[13px] font-semibold text-white transition-transform duration-200 ease-out ${canAsk ? "scale-x-100" : "scale-x-0"}`}
             >
-              <X size={17} className="text-blue-600" />
+              <Sparkles size={15} />
+              Ask
             </button>
           </div>
-          <button
-            onClick={submitSearch}
-            className="h-11 w-[112px] rounded-lg bg-gradient-to-r from-indigo-600 to-blue-600 text-[13px] font-semibold text-white"
-          >
-            Search
-          </button>
         </div>
       </div>
       {open && query.trim().length >= 3 && (
-        <div className="absolute left-0 right-0 top-[67px] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-[#111a2d]">
+        <div className="absolute left-0 right-0 top-[67px] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-[#414141] dark:bg-[#303030]">
           <div className="flex max-h-[270px]">
-            <aside className="w-[220px] shrink-0 border-r text-[12px] border-slate-100 p-2 dark:border-slate-800">
+            <aside className="w-[220px] shrink-0 border-r text-[12px] border-slate-100 p-2 dark:border-[#414141]">
               {categories.map(([label, Icon]) => (
                 <button
                   key={label}
                   onClick={() => setCategory(label)}
-                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] ${category === label ? "bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-300" : "text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"}`}
+                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] ${category === label ? "bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-300" : "text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-[#383838]"}`}
                 >
                   <Icon size={18} />
                   <span>{label}</span>
-                  <span className="ml-auto rounded-md bg-slate-100 px-2 py-0.5 text-[10px] dark:bg-slate-800">
+                  <span className="ml-auto rounded-md bg-slate-100 px-2 py-0.5 text-[10px] dark:bg-[#414141]">
                     {counts[label]}
                   </span>
                 </button>
@@ -172,7 +185,7 @@ export default function GlobalSearch({ onResult }) {
                 <button
                   onClick={() => setCategory("Generated")}
                   disabled={!generatedReady}
-                  className={`mt-2 flex w-full items-center gap-3 rounded-lg border-t border-slate-100 px-3 py-3 text-left text-[13px] dark:border-slate-800 ${category === "Generated" ? "bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300" : "text-slate-700 dark:text-slate-300"} ${generatedReady ? "hover:bg-slate-50 dark:hover:bg-slate-800" : "cursor-wait opacity-70"}`}
+                  className={`mt-2 flex w-full items-center gap-3 rounded-lg border-t border-slate-100 px-3 py-3 text-left text-[13px] dark:border-[#414141] ${category === "Generated" ? "bg-violet-50 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300" : "text-slate-700 dark:text-slate-300"} ${generatedReady ? "hover:bg-slate-50 dark:hover:bg-[#383838]" : "cursor-wait opacity-70"}`}
                 >
                   <Sparkles size={18} />
                   <span
@@ -198,7 +211,7 @@ export default function GlobalSearch({ onResult }) {
                     {aiError}
                   </div>
                 ) : (
-                  <div className="m-4 whitespace-pre-wrap rounded-lg bg-slate-100 p-4 text-sm leading-6 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                  <div className="m-4 whitespace-pre-wrap rounded-lg bg-slate-100 p-4 text-sm leading-6 text-slate-700 dark:bg-[#383838] dark:text-slate-200">
                     <strong>Response:</strong> {aiResponse?.result}
                   </div>
                 )
@@ -218,7 +231,7 @@ export default function GlobalSearch({ onResult }) {
                       setOpen(false);
                       onResult(r.documentId, r.page);
                     }}
-                    className="flex w-full items-center gap-3 border-b border-slate-100 py-3 text-left hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50"
+                    className="flex w-full items-center gap-3 border-b border-slate-100 py-3 text-left hover:bg-slate-50 dark:border-[#414141] dark:hover:bg-[#383838]"
                   >
                     <FileIcon type={r.type} />
                     <div className="min-w-0 flex-1">
@@ -264,7 +277,7 @@ function Highlighted({ text, query }) {
     terms.some((t) => p.toLowerCase() === t.toLowerCase()) ? (
       <mark
         key={i}
-        className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200"
+        className="bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-200"
       >
         {p}
       </mark>

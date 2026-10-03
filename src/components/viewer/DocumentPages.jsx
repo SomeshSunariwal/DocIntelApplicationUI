@@ -25,7 +25,7 @@ export default function DocumentPages({
   return (
     <div
       ref={pdfScrollRef}
-      className="thin-scroll min-w-0 flex-1 overflow-auto bg-slate-100 p-4 sm:p-6 dark:bg-slate-950"
+      className="thin-scroll min-w-0 flex-1 overflow-auto bg-slate-100 p-4 sm:p-6 dark:bg-[#383838]"
     >
       <div className="mx-auto flex min-w-0 flex-col items-center gap-5 py-1">
         {doc.type === "pdf" &&

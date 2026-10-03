@@ -1000,7 +1000,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
 
   if (!doc) {
     return (
-      <section className="surface flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111a2d]">
+      <section className="surface flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-[#414141] dark:bg-[#303030]">
         <PromptInputBasic documentId={doc?.id} documentName="All Documents" />
       </section>
     );
@@ -1118,8 +1118,8 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
 
       case "Summary":
         return (
-          <div className="h-full min-h-0 overflow-auto p-6 sm:p-8">
-            <div className="mx-auto min-h-[320px] w-full max-w-3xl rounded-2xl bg-slate-100 p-6 dark:bg-slate-800/70">
+          <div className="thin-scroll h-full min-h-0 overflow-auto p-6 sm:p-8">
+            <div className="mx-auto min-h-[320px] w-full max-w-3xl rounded-2xl bg-slate-100 p-6 dark:bg-[#383838]">
               {summaryChunks.length > 0 ? (
                 <div className="min-w-0 break-words text-sm leading-7 text-slate-700 dark:text-slate-200">
                   <Markdown>{summaryChunks.join("")}</Markdown>
@@ -1137,7 +1137,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
                   {Array.from({ length: 10 }, (_, index) => (
                     <div
                       key={index}
-                      className={`h-3 animate-pulse rounded-full bg-slate-300/80 dark:bg-slate-600/80 ${index === 9 ? "w-2/5" : index % 3 === 0 ? "w-full" : index % 3 === 1 ? "w-11/12" : "w-4/5"}`}
+                      className={`h-3 animate-pulse rounded-full bg-slate-300/80 dark:bg-[#505050] ${index === 9 ? "w-2/5" : index % 3 === 0 ? "w-full" : index % 3 === 1 ? "w-11/12" : "w-4/5"}`}
                     />
                   ))}
                 </div>
@@ -1154,9 +1154,9 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
   return (
     <section
       ref={viewerRef}
-      className="surface relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-[#111a2d]"
+      className="surface relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-[#414141] dark:bg-[#303030]"
     >
-      <div className="flex min-h-15.5 shrink-0 items-center border-b border-slate-100 px-4 dark:border-slate-800">
+      <div className="flex min-h-15.5 shrink-0 items-center border-b border-slate-100 px-4 dark:border-[#414141]">
         <FileIcon type={doc.type} />
         <div className="ml-3 min-w-0">
           <div className="truncate text-[16px] font-bold">{doc.name}</div>
@@ -1178,14 +1178,14 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
           </button>
           <button
             onClick={downloadDocument}
-            className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-[12px] dark:border-slate-700"
+            className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-[12px] dark:border-[#505050] dark:hover:bg-[#383838]"
           >
             <Download size={15} />
             Download
           </button>
           <button
             onClick={shareDocument}
-            className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-[12px] dark:border-slate-700"
+            className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-[12px] dark:border-[#505050] dark:hover:bg-[#383838]"
           >
             <Link size={15} />
             Share
@@ -1194,7 +1194,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
             <button
               ref={viewerMenuButtonRef}
               onClick={() => setMenu((v) => !v)}
-              className="rounded-lg border border-slate-200 p-2 dark:border-slate-700"
+              className="rounded-lg border border-slate-200 p-2 dark:border-[#505050] dark:hover:bg-[#383838]"
               aria-label="Document actions"
             >
               <MoreVertical size={17} />
@@ -1202,7 +1202,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
             {menu && (
               <div
                 ref={viewerMenuRef}
-                className="absolute right-0 top-11 z-50 w-40 rounded-lg border border-slate-200 bg-white p-1 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+                className="absolute right-0 top-11 z-50 w-40 rounded-lg border border-slate-200 bg-white p-1 shadow-xl dark:border-[#414141] dark:bg-[#303030]"
               >
                 <Menu label="Open in new tab" onClick={openInNewTab} />
                 <Menu label="Rename" />
@@ -1237,7 +1237,7 @@ function Menu({ label, red, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full rounded px-2 py-2 text-left text-xs hover:bg-slate-100 dark:hover:bg-slate-800 ${red ? "text-red-500" : ""}`}
+      className={`w-full rounded px-2 py-2 text-left text-xs hover:bg-slate-100 dark:hover:bg-[#383838] ${red ? "text-red-500" : ""}`}
     >
       {label}
     </button>

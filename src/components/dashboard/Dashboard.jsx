@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Navbar from "../layout/Navbar";
 import UploadPanel from "../upload/UploadPanel";
@@ -6,8 +6,10 @@ import DocumentList from "../documents/DocumentList";
 import TotalDocuments from "../documents/TotalDocuments";
 import GlobalSearch from "../search/GlobalSearch";
 import DocumentViewer from "../viewer/DocumentViewer";
+import ConfigModal from "../settings/ConfigModal";
 import { getUserAllDocumentsAction } from "../apis/actions/getUserAllDocumentsAction";
 import { filesUploadAction } from "../apis/actions/filesUploadAction";
+import { addOrUpdateConfigAction } from "../apis/actions/addOrUpdateConfigAction";
 
 const formatDate = (value) => {
   if (!value) return "—";
@@ -51,7 +53,27 @@ const mapDocumentStatus = (value) => {
   }
 };
 
-const mapApiDocument = (document) => {
+const mapApiDocument = (document, parentDocument = null) => {
+  // The API now returns document identity separately from its versioned file
+  // metadata. Keep the newest version as the list/viewer representation.
+  const versions = Array.isArray(document.documentVersions)
+    ? document.documentVersions
+    : [];
+  if (versions.length) {
+    const latestVersion = versions.reduce((latest, version) => {
+      const latestNumber = Number(latest.version) || 0;
+      const versionNumber = Number(version.version) || 0;
+      return versionNumber > latestNumber ? version : latest;
+    });
+    return mapApiDocument(
+      {
+        ...latestVersion,
+        documentId: latestVersion.documentId || document.documentId,
+      },
+      document,
+    );
+  }
+
   const type = String(
     document.fileExtensions || document.fileName?.split(".").pop() || "file",
   )
@@ -60,7 +82,7 @@ const mapApiDocument = (document) => {
   const apiStatus = String(document.status || "").toUpperCase();
 
   return {
-    id: document.documentId,
+    id: document.documentId || parentDocument?.documentId,
     name: document.fileName || "Untitled document",
     type,
     size: formatFileSize(document.fileSize),
@@ -74,30 +96,64 @@ const mapApiDocument = (document) => {
 };
 
 export default function Dashboard({ onLogout }) {
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(true);
   const [documents, setDocuments] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [jumpPage, setJumpPage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadSubmitted, setUploadSubmitted] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsMounted, setSettingsMounted] = useState(false);
+  const [hasMoreDocuments, setHasMoreDocuments] = useState(true);
   const dispatch = useDispatch();
+  const nextPageRef = useRef(1);
+  const loadMoreResolverRef = useRef(null);
+  const settingsCloseTimerRef = useRef(null);
 
   const {
     data: documentResponse,
     loading,
     error,
+    lastPage,
+    lastPageEmpty,
+    lastPageAppend,
   } = useSelector((state) => state.rootReducer.getUserAllDocuments);
 
   const { loading: uploadLoading, error: uploadError } = useSelector(
     (state) => state.rootReducer.filesUpload,
   );
+  const {
+    loading: configLoading,
+    error: configError,
+    success: configSuccess,
+  } = useSelector((state) => state.rootReducer.addOrUpdateConfig);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
+  useEffect(
+    () => () => window.clearTimeout(settingsCloseTimerRef.current),
+    [],
+  );
+
+  const openSettings = () => {
+    window.clearTimeout(settingsCloseTimerRef.current);
+    setSettingsMounted(true);
+    setSettingsOpen(true);
+  };
+
+  const closeSettings = () => {
+    setSettingsOpen(false);
+    window.clearTimeout(settingsCloseTimerRef.current);
+    settingsCloseTimerRef.current = window.setTimeout(
+      () => setSettingsMounted(false),
+      200,
+    );
+  };
+
   useEffect(() => {
-    dispatch(getUserAllDocumentsAction());
+    dispatch(getUserAllDocumentsAction({ page: 0 }));
   }, [dispatch]);
 
   useEffect(() => {
@@ -116,6 +172,33 @@ export default function Dashboard({ onLogout }) {
       return [...pending, ...mapped];
     });
   }, [documentResponse]);
+
+  useEffect(() => {
+    if (!loadMoreResolverRef.current || loading) return;
+
+    const resolve = loadMoreResolverRef.current;
+    loadMoreResolverRef.current = null;
+    if (error) {
+      resolve(true);
+      return;
+    }
+
+    const hasAnotherPage = !lastPageEmpty;
+    setHasMoreDocuments(hasAnotherPage);
+    if (hasAnotherPage) nextPageRef.current += 1;
+    resolve(hasAnotherPage);
+  }, [loading, error, lastPage, lastPageEmpty]);
+
+  useEffect(() => {
+    if (
+      !loading &&
+      documentResponse &&
+      lastPage === 0 &&
+      !lastPageAppend
+    ) {
+      setHasMoreDocuments(!lastPageEmpty);
+    }
+  }, [loading, documentResponse, lastPage, lastPageAppend, lastPageEmpty]);
 
   useEffect(() => {
     if (!uploadLoading) return undefined;
@@ -143,7 +226,7 @@ export default function Dashboard({ onLogout }) {
     if (!hasProcessing) return undefined;
 
     const timer = window.setTimeout(() => {
-      dispatch(getUserAllDocumentsAction());
+      dispatch(getUserAllDocumentsAction({ page: 0, append: true }));
     }, 30000);
 
     return () => window.clearTimeout(timer);
@@ -199,8 +282,27 @@ export default function Dashboard({ onLogout }) {
     }
   };
 
-  // TODO: Implement document pagination and return whether another page was loaded.
-  const loadMore = useCallback(async () => false, []);
+  const loadMore = useCallback(
+    () =>
+      new Promise((resolve) => {
+        if (loadMoreResolverRef.current) {
+          resolve(true);
+          return;
+        }
+        if (loading) {
+          resolve(true);
+          return;
+        }
+        loadMoreResolverRef.current = resolve;
+        dispatch(
+          getUserAllDocumentsAction({
+            page: nextPageRef.current,
+            append: true,
+          }),
+        );
+      }),
+    [dispatch, loading],
+  );
 
   useEffect(() => {
     if (!uploadSubmitted) return;
@@ -221,7 +323,7 @@ export default function Dashboard({ onLogout }) {
             : document,
         ),
       );
-      dispatch(getUserAllDocumentsAction());
+      dispatch(getUserAllDocumentsAction({ page: 0, append: true }));
     }
     setUploadSubmitted(false);
   }, [dispatch, uploadLoading, uploadError, uploading, uploadSubmitted]);
@@ -248,8 +350,23 @@ export default function Dashboard({ onLogout }) {
   }, [documents]);
 
   return (
-    <div className="app-shell flex h-screen min-h-0 flex-col overflow-hidden bg-[#f4f8fe] text-[#101a3d] dark:bg-[#0b1220] dark:text-slate-100">
-      <Navbar dark={dark} setDark={setDark} onLogout={onLogout} />
+    <div className="app-shell flex h-screen min-h-0 flex-col overflow-hidden bg-[#f4f8fe] text-[#101a3d] dark:bg-[#292929] dark:text-slate-100">
+      <Navbar
+        dark={dark}
+        setDark={setDark}
+        onLogout={onLogout}
+        onSettingsClick={openSettings}
+      />
+      {settingsMounted && (
+        <ConfigModal
+          open={settingsOpen}
+          onClose={closeSettings}
+          onSave={(config) => dispatch(addOrUpdateConfigAction(config))}
+          loading={configLoading}
+          error={configError}
+          success={configSuccess}
+        />
+      )}
       <main className="app-main grid min-h-0 flex-1 grid-cols-[348px_minmax(0,1fr)] gap-4 overflow-hidden px-7 py-3.5">
         <aside className="sidebar-grid grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden">
           <UploadPanel onFiles={addFiles} uploadError={uploadError} />
@@ -260,6 +377,12 @@ export default function Dashboard({ onLogout }) {
             selectedId={selectedId}
             onSelect={select}
             onLoadMore={loadMore}
+            hasMorePages={hasMoreDocuments}
+            initialLoading={
+              (loading || (!documentResponse && !error)) &&
+              documents.length === 0
+            }
+            loadError={error}
           />
           <TotalDocuments
             count={

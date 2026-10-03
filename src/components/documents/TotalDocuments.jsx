@@ -3,7 +3,7 @@ import { Database } from "lucide-react";
 
 export default function TotalDocuments({ count, size }) {
   return (
-    <div className="surface flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-soft dark:bg-[#111a2d]">
+    <div className="surface flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-soft dark:bg-[#303030]">
       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/60">
         <Database size={21} />
       </div>

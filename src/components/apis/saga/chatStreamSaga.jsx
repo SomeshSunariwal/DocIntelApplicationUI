@@ -13,6 +13,7 @@ import {
 function createChatStreamChannel(action) {
   const query = action.payload.query;
   const documentId = action.payload.documentId;
+  const version = action.payload.version;
 
   return eventChannel((emit) => {
     const controller = new AbortController();
@@ -25,6 +26,10 @@ function createChatStreamChannel(action) {
     if (documentId) {
       API_LINK =
         API_LINK + And + `${QueryParam.DOCUMENT_ID}${encodeURIComponent(documentId)}`;
+    }
+
+    if (documentId && version !== undefined && version !== null) {
+      API_LINK = API_LINK + And + `version=${encodeURIComponent(version)}`;
     }
 
     async function startStream() {

@@ -17,7 +17,7 @@ export default function ThumbnailRail({
   return (
     <aside
       ref={thumbnailRailRef}
-      className="thin-scroll w-[112px] shrink-0 overflow-y-auto bg-slate-50 p-2 dark:bg-slate-900"
+      className="thin-scroll w-[112px] shrink-0 overflow-y-auto bg-slate-50 p-2 dark:bg-[#333333]"
     >
       <div ref={thumbnailContentRef} className="relative">
         <div

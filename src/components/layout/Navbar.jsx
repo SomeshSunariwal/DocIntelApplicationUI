@@ -11,9 +11,9 @@ import {
   Moon,
   MessageSquareText,
 } from "lucide-react";
-export default function Navbar({ dark, setDark, onLogout }) {
+export default function Navbar({ dark, setDark, onLogout, onSettingsClick }) {
   return (
-    <header className="nav flex h-[66px] shrink-0 items-center border-b border-slate-200 bg-white px-7 shadow-[0_1px_8px_rgba(30,64,175,.04)] dark:border-slate-800 dark:bg-[#0e1728]">
+    <header className="nav flex h-[66px] shrink-0 items-center border-b border-slate-200 bg-white px-7 shadow-[0_1px_8px_rgba(30,64,175,.04)] dark:border-[#414141] dark:bg-[#303030]">
       <div className="flex w-[330px] items-center gap-3">
         <div className="relative h-10 w-10 overflow-hidden rounded-xl bg-gradient-to-br from-sky-400 via-blue-600 to-violet-500">
           <div className="absolute left-2 top-2 h-6 w-4 rounded-l-md bg-white/90" />
@@ -30,16 +30,16 @@ export default function Navbar({ dark, setDark, onLogout }) {
       <nav className="flex flex-1 items-center gap-1 text-[14px]">
         <Nav active icon={Home} label="Dashboard" />
         <Nav icon={MessageSquareText} label="Chat" />
-        <Nav icon={Settings} label="Settings" />
+        <Nav icon={Settings} label="Settings" onClick={onSettingsClick} />
       </nav>
       <div className="flex items-center gap-3">
-        <button className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+        <button className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-[#383838]">
           <Bell size={20} />
           <i className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />
         </button>
         <button
           onClick={() => setDark((v) => !v)}
-          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-[#383838]"
           aria-label="Toggle theme"
         >
           {dark ? <Sun size={18} /> : <Moon size={18} />}
@@ -59,10 +59,12 @@ export default function Navbar({ dark, setDark, onLogout }) {
   );
 }
 
-function Nav({ icon: Icon, label, active }) {
+function Nav({ icon: Icon, label, active, onClick }) {
   return (
     <button
-      className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-medium ${active ? "bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-300" : "text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"}`}
+      type="button"
+      onClick={onClick}
+      className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-medium ${active ? "bg-blue-50 text-blue-600 dark:bg-[#3b3b3b] dark:text-blue-300" : "text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-[#383838]"}`}
     >
       <Icon size={18} />
       {label}
@@ -72,19 +74,57 @@ function Nav({ icon: Icon, label, active }) {
 
 function ProfileMenu({ onLogout }) {
   const [open, setOpen] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
+  const rootRef = React.useRef(null);
+  const closeTimerRef = React.useRef(null);
+
+  const closeMenu = () => {
+    setOpen(false);
+    window.clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = window.setTimeout(() => setMounted(false), 200);
+  };
+
+  React.useEffect(() => {
+    if (!open) return undefined;
+    const handleOutsideClick = (event) => {
+      if (!rootRef.current?.contains(event.target)) closeMenu();
+    };
+    document.addEventListener("pointerdown", handleOutsideClick);
+    return () => document.removeEventListener("pointerdown", handleOutsideClick);
+  }, [open]);
+
+  React.useEffect(
+    () => () => {
+      window.clearTimeout(closeTimerRef.current);
+    },
+    [],
+  );
+
   return (
-    <div className="relative">
+    <div className="relative" ref={rootRef}>
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="rounded-md p-1 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+        onClick={() => {
+          if (open) {
+            closeMenu();
+            return;
+          }
+          window.clearTimeout(closeTimerRef.current);
+          setMounted(true);
+          setOpen(true);
+        }}
+        className="rounded-md p-1 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-[#383838]"
         aria-label="Open profile menu"
         aria-expanded={open}
       >
         <ChevronDown size={16} />
       </button>
-      {open && (
-        <div className="profile-dropdown">
+      {mounted && (
+        <div
+          className="profile-dropdown"
+          data-state={open ? "open" : "closed"}
+          aria-hidden={!open}
+        >
           <button type="button" className="profile-dropdown-item">
             Edit Profile
           </button>
@@ -93,7 +133,7 @@ function ProfileMenu({ onLogout }) {
             type="button"
             className="profile-dropdown-item profile-dropdown-logout"
             onClick={() => {
-              setOpen(false);
+              closeMenu();
               onLogout();
             }}
           >

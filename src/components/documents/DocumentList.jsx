@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
-  ChevronUp,
   Ellipsis,
   Filter,
   LoaderCircle,
@@ -19,11 +18,14 @@ export default function DocumentList({
   selectedId,
   onSelect,
   onLoadMore,
+  hasMorePages,
+  initialLoading = false,
+  loadError,
 }) {
   const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
   const [q, setQ] = useState("");
   const [menu, setMenu] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [sortBy, setSortBy] = useState(null);
   const [sortOpen, setSortOpen] = useState(false);
   const [sortDirection, setSortDirection] = useState("asc");
@@ -31,12 +33,19 @@ export default function DocumentList({
   const loadingRef = useRef(false);
   const menuButtonRefs = useRef(new Map());
   const menuRef = useRef(null);
+  const menuCloseTimerRef = useRef(null);
+
+  const closeMenu = useCallback(() => {
+    setMenuOpen(false);
+    window.clearTimeout(menuCloseTimerRef.current);
+    menuCloseTimerRef.current = window.setTimeout(() => setMenu(null), 200);
+  }, []);
 
   const handleScroll = useCallback(
     async (event) => {
       const el = event.currentTarget;
-      if (menu) setMenu(null);
-      if (loadingRef.current || !hasMore) return;
+      if (menu) closeMenu();
+      if (loadingRef.current || !hasMorePages) return;
       const remaining = el.scrollHeight - el.scrollTop - el.clientHeight;
       if (remaining > 96) return;
       if (el.scrollHeight <= el.clientHeight) return;
@@ -44,13 +53,13 @@ export default function DocumentList({
       setLoading(true);
       try {
         const added = await onLoadMore();
-        if (!added) setHasMore(false);
+        if (!added) return;
       } finally {
         loadingRef.current = false;
         setLoading(false);
       }
     },
-    [hasMore, onLoadMore],
+    [hasMorePages, onLoadMore, menu, closeMenu],
   );
 
   useEffect(() => {
@@ -61,7 +70,7 @@ export default function DocumentList({
           !button?.contains(e.target) &&
           !menuRef.current?.contains(e.target)
         ) {
-          setMenu(null);
+          closeMenu();
         }
       }
       if (sortOpen && !sortMenuRef.current?.contains(e.target)) {
@@ -70,7 +79,12 @@ export default function DocumentList({
     };
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [menu, sortOpen]);
+  }, [menu, sortOpen, closeMenu]);
+
+  useEffect(
+    () => () => window.clearTimeout(menuCloseTimerRef.current),
+    [],
+  );
 
   const shown = [...documents]
     .filter((d) => d.name.toLowerCase().includes(q.toLowerCase()))
@@ -110,18 +124,15 @@ export default function DocumentList({
     );
 
   return (
-    <section className="surface min-h-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft dark:border-slate-800 dark:bg-[#111a2d] flex flex-col">
+    <section className="surface min-h-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft dark:border-[#414141] dark:bg-[#303030] flex flex-col">
       <div className="flex shrink-0 items-center justify-between px-3.5 pt-3.5">
         <h2 className="text-[17px] font-bold">
           Your Documents{" "}
           <span className="font-medium text-slate-500">({totalCount})</span>
         </h2>
-        <button className="rounded p-1">
-          <ChevronUp size={17} />
-        </button>
       </div>
       <div className="flex shrink-0 gap-2 px-3.5 py-3">
-        <div className="flex text-[12px] h-9 min-w-0 flex-1 items-center gap-2 rounded-lg border border-slate-200 px-2.5 dark:border-slate-700">
+        <div className="flex text-[12px] h-9 min-w-0 flex-1 items-center gap-2 rounded-lg border border-slate-200 px-2.5 dark:border-[#505050]">
           <Search size={16} className="shrink-0 text-slate-400" />
           <input
             value={q}
@@ -134,14 +145,14 @@ export default function DocumentList({
           <div ref={sortMenuRef} className="relative">
             <button
               onClick={() => setSortOpen((v) => !v)}
-              className={`rounded-lg border px-2.5 py-2 ${sortBy ? "border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-500 dark:bg-blue-950/40 dark:text-blue-400" : "border-slate-200 dark:border-slate-700"}`}
+              className={`rounded-lg border px-2.5 py-2 ${sortBy ? "border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-500 dark:bg-blue-950/40 dark:text-blue-400" : "border-slate-200 dark:border-[#505050]"}`}
               aria-label="Sort documents"
               aria-expanded={sortOpen}
             >
               <Filter size={17} />
             </button>
             {sortOpen && (
-              <div className="absolute right-0 top-11 z-50 w-40 rounded-lg border border-slate-200 bg-white p-1 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+              <div className="absolute right-0 top-11 z-50 w-40 rounded-lg border border-slate-200 bg-white p-1 shadow-xl dark:border-[#414141] dark:bg-[#303030]">
                 {[
                   ["name", "Sort by Name"],
                   ["size", "Sort by size"],
@@ -155,7 +166,7 @@ export default function DocumentList({
                       );
                       setSortOpen(false);
                     }}
-                    className={`w-full rounded px-2.5 py-2 text-left text-xs hover:bg-slate-100 dark:hover:bg-slate-800 ${sortBy === value ? "font-medium text-blue-600 dark:text-blue-400" : ""}`}
+                    className={`w-full rounded px-2.5 py-2 text-left text-xs hover:bg-slate-100 dark:hover:bg-[#383838] ${sortBy === value ? "font-medium text-blue-600 dark:text-blue-400" : ""}`}
                   >
                     {label}
                   </button>
@@ -168,7 +179,7 @@ export default function DocumentList({
               setSortDirection((v) => (v === "asc" ? "desc" : "asc"))
             }
             disabled={!sortBy}
-            className={`rounded-lg border px-2.5 py-2 ${sortBy ? "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800" : "cursor-default border-slate-200 text-slate-300 dark:border-slate-700 dark:text-slate-600"}`}
+            className={`rounded-lg border px-2.5 py-2 ${sortBy ? "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-[#505050] dark:text-slate-300 dark:hover:bg-[#383838]" : "cursor-default border-slate-200 text-slate-300 dark:border-[#505050] dark:text-slate-600"}`}
             aria-label={
               sortDirection === "asc" ? "Ascending order" : "Descending order"
             }
@@ -186,11 +197,46 @@ export default function DocumentList({
         onScroll={handleScroll}
         className="thin-scroll min-h-0 flex-1 overflow-y-auto px-3 pb-1"
       >
+        {initialLoading && documents.length === 0 && (
+          <div className="space-y-1" aria-label="Loading documents" role="status">
+            {Array.from({ length: 7 }, (_, index) => (
+              <div
+                key={index}
+                className="flex min-h-[61px] items-center gap-3 border-b border-slate-100 px-2.5 dark:border-[#414141]"
+              >
+                <div className="h-9 w-9 animate-pulse rounded-lg bg-slate-200 dark:bg-[#414141]" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 w-3/5 animate-pulse rounded bg-slate-200 dark:bg-[#414141]" />
+                  <div className="h-2.5 w-2/5 animate-pulse rounded bg-slate-100 dark:bg-[#383838]" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {!initialLoading && shown.length === 0 && (
+          <div className="flex min-h-40 flex-col items-center justify-center px-5 text-center">
+            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-400 dark:bg-[#383838] dark:text-slate-400">
+              <Search size={19} />
+            </div>
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+              {loadError
+                ? "Unable to load documents"
+                : q.trim()
+                  ? "No matching documents"
+                  : "There is no documents"}
+            </p>
+            {loadError && (
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Please try again in a moment.
+              </p>
+            )}
+          </div>
+        )}
         {shown.map((d) => (
           <div
             key={d.id}
             onClick={() => d.status === "completed" && onSelect(d.id, 1)}
-            className={`relative flex min-h-[61px] items-center gap-3 border-b border-slate-100 px-2.5 dark:border-slate-800 ${d.status === "completed" ? "cursor-pointer" : ""} ${selectedId === d.id ? "rounded-md bg-blue-50/90 dark:bg-blue-950/40" : ""}`}
+            className={`relative flex min-h-[61px] items-center gap-3 border-b border-slate-100 px-2.5 dark:border-[#414141] ${d.status === "completed" ? "cursor-pointer" : ""} ${selectedId === d.id ? "rounded-md bg-blue-50/90 dark:bg-blue-950/40" : ""}`}
           >
             {selectedId === d.id && (
               <span className="absolute left-0 top-0 h-full w-1 rounded-full bg-blue-600" />
@@ -204,7 +250,7 @@ export default function DocumentList({
                     <span>Uploading...</span>
                     <span>{d.progress}%</span>
                   </div>
-                  <div className="mt-1 h-0.5 w-[105px] bg-slate-200 dark:bg-slate-700">
+                  <div className="mt-1 h-0.5 w-[105px] bg-slate-200 dark:bg-[#505050]">
                     <div
                       className="h-full bg-blue-500"
                       style={{ width: `${d.progress}%` }}
@@ -216,7 +262,7 @@ export default function DocumentList({
                   <div className="mt-1 text-[11px] text-blue-600">
                     Processing...
                   </div>
-                  <div className="mt-1 h-0.5 w-[105px] bg-slate-200 dark:bg-slate-700">
+                  <div className="mt-1 h-0.5 w-[105px] bg-slate-200 dark:bg-[#505050]">
                     <div
                       className="h-full bg-blue-500"
                       style={{ width: `${d.progress ?? 75}%` }}
@@ -243,7 +289,7 @@ export default function DocumentList({
                   onClick={(e) => {
                     e.stopPropagation();
                     if (menu?.id === d.id) {
-                      setMenu(null);
+                      closeMenu();
                       return;
                     }
                     const rect = e.currentTarget.getBoundingClientRect();
@@ -257,7 +303,9 @@ export default function DocumentList({
                       rect.bottom + gap,
                       window.innerHeight - 8,
                     );
+                    window.clearTimeout(menuCloseTimerRef.current);
                     setMenu({ id: d.id, top, left });
+                    setMenuOpen(true);
                   }}
                   ref={(node) => {
                     if (node) menuButtonRefs.current.set(d.id, node);
@@ -272,14 +320,15 @@ export default function DocumentList({
                   createPortal(
                     <div
                       ref={menuRef}
-                      className="fixed z-[100] w-36 rounded-lg border text-[12px] border-slate-200 bg-white p-1 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+                      data-state={menuOpen ? "open" : "closed"}
+                      className="document-actions-menu fixed z-[100] w-36 overflow-hidden rounded-lg border border-slate-200 bg-white p-1 text-[12px] shadow-xl dark:border-[#414141] dark:bg-[#303030]"
                       style={{ top: menu.top, left: menu.left }}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <MenuItem
                         label="Open"
                         onClick={() => {
-                          setMenu(null);
+                          closeMenu();
                           onSelect(d.id, 1);
                         }}
                       />
@@ -301,13 +350,13 @@ export default function DocumentList({
             ) : null}
           </div>
         ))}
-        {loading && (
+        {loading && documents.length > 0 && (
           <div className="flex items-center justify-center gap-2 py-2 text-[10px] text-slate-500">
             <LoaderCircle size={15} className="animate-spin text-blue-500" />
             Loading documents...
           </div>
         )}
-        {!hasMore && (
+        {!initialLoading && documents.length > 0 && !hasMorePages && (
           <div className="py-2 text-center text-[10px] text-slate-400">
             All documents loaded
           </div>
@@ -320,7 +369,7 @@ function MenuItem({ label, danger, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full rounded px-2 py-1.5 text-left text-xs hover:bg-slate-100 dark:hover:bg-slate-800 ${danger ? "text-red-500" : ""}`}
+      className={`w-full rounded px-2 py-1.5 text-left text-xs hover:bg-slate-100 dark:hover:bg-[#383838] ${danger ? "text-red-500" : ""}`}
     >
       {label}
     </button>

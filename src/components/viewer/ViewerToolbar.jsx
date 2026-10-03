@@ -37,8 +37,8 @@ export default function ViewerToolbar({
   onRefresh,
 }) {
   return (
-    <div className="flex min-h-[44px] shrink-0 items-center border-b border-slate-100 dark:border-slate-800">
-      <div className="flex items-center border-r text-[12px] border-slate-100 px-3 dark:border-slate-800">
+    <div className="flex min-h-[44px] shrink-0 items-center border-b border-slate-100 dark:border-[#414141]">
+      <div className="flex items-center border-r text-[12px] border-slate-100 px-3 dark:border-[#414141]">
         <button
           onClick={onPreviousPage}
           disabled={page <= 1}
@@ -48,7 +48,7 @@ export default function ViewerToolbar({
         </button>
         <button
           onClick={onGoToPage}
-          className="mx-2 rounded bg-slate-100 px-2 py-1 dark:bg-slate-800"
+          className="mx-2 rounded bg-slate-100 px-2 py-1 dark:bg-[#414141]"
         >
           {page}
         </button>
@@ -61,7 +61,7 @@ export default function ViewerToolbar({
           <ChevronRight size={17} />
         </button>
       </div>
-      <div className="flex items-center text-[12px] gap-2 border-r border-slate-100 px-3 dark:border-slate-800">
+      <div className="flex items-center text-[12px] gap-2 border-r border-slate-100 px-3 dark:border-[#414141]">
         <button
           onClick={onZoomOut}
           disabled={zoom <= 50}
@@ -70,7 +70,7 @@ export default function ViewerToolbar({
         >
           <Minus size={16} />
         </button>
-        <span className="rounded bg-slate-100 px-3 py-1 dark:bg-slate-800">
+        <span className="rounded bg-slate-100 px-3 py-1 dark:bg-[#414141]">
           {zoom}%
         </span>
         <button
@@ -90,11 +90,11 @@ export default function ViewerToolbar({
           Reset
         </button>
       </div>
-      <div className="border-r border-slate-100 px-3 dark:border-slate-800">
+      <div className="border-r border-slate-100 px-3 dark:border-[#414141]">
         <select
           value={viewMode}
           onChange={(e) => onViewModeChange(e.target.value)}
-          className="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium outline-none dark:border-slate-700 dark:bg-slate-900"
+          className="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium outline-none dark:border-[#505050] dark:bg-[#383838]"
           aria-label="PDF page display mode"
         >
           <option value="all">All pages</option>
@@ -112,7 +112,7 @@ export default function ViewerToolbar({
         <div
           className={`flex h-8 items-center overflow-hidden transition-[width,opacity] duration-200 ease-in-out ${searchOpen ? "w-[250px] max-w-[35vw] opacity-100" : "w-0 opacity-0 pointer-events-none"}`}
         >
-          <div className="flex h-8 w-[250px] max-w-[35vw] items-center gap-2 rounded border border-slate-200 px-2 dark:border-slate-700">
+          <div className="flex h-8 w-[250px] max-w-[35vw] items-center gap-2 rounded border border-slate-200 px-2 dark:border-[#505050]">
             <Search size={14} className="shrink-0" />
             <input
               autoFocus={searchOpen}
@@ -137,7 +137,7 @@ export default function ViewerToolbar({
           <button
             type="button"
             onClick={onSearchOpen}
-            className="rounded p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="rounded p-1.5 hover:bg-slate-100 dark:hover:bg-[#383838]"
             title="Search in document"
             aria-label="Search in document"
           >

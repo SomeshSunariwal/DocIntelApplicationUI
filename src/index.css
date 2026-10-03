@@ -47,30 +47,44 @@ button {
   border-radius: 999px;
 }
 .dark body {
-  background: #0b1220;
+  background: #292929;
   color: #e9efff;
 }
 .dark .surface {
-  background: #111a2c !important;
-  border-color: #24324a !important;
+  background: #303030 !important;
+  border-color: #414141 !important;
 }
 .dark .subsurface {
-  background: #0d1626 !important;
-  border-color: #24324a !important;
+  background: #333333 !important;
+  border-color: #414141 !important;
 }
 .dark .muted {
   color: #9baaca !important;
 }
 .dark .divider {
-  border-color: #24324a !important;
+  border-color: #414141 !important;
 }
 .pdf-paper {
   background: #fff;
   box-shadow: 0 2px 12px rgba(15, 23, 42, 0.07);
 }
 .dark .pdf-paper {
-  background: #182235;
+  background: #fff;
   color: #e7ecf7;
+}
+.dark .profile-dropdown {
+  border-color: #414141;
+  background: #303030;
+}
+.dark .profile-dropdown-item:hover {
+  background: #383838;
+}
+.dark .profile-dropdown-divider {
+  background: #414141;
+}
+.dark .nav,
+.dark .surface {
+  border-color: #414141 !important;
 }
 mark {
   border-radius: 3px;
@@ -585,10 +599,19 @@ mark {
   border-radius: 10px;
   background: #fff;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.14);
+  transform-origin: top right;
+}
+.profile-dropdown[data-state="open"] {
+  animation: menu-expand-diagonal 200ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.profile-dropdown[data-state="closed"] {
+  animation: menu-collapse-diagonal 200ms cubic-bezier(0.4, 0, 1, 1) both;
+  pointer-events: none;
 }
 .dark .profile-dropdown {
-  border-color: #334155;
-  background: #0f172a;
+  border-color: #414141;
+  background: #303030;
+  color: #e9efff;
 }
 .profile-dropdown-item {
   display: block;
@@ -609,7 +632,7 @@ mark {
   color: #e2e8f0;
 }
 .dark .profile-dropdown-item:hover {
-  background: #1e293b;
+  background: #383838;
 }
 .profile-dropdown-divider {
   height: 1px;
@@ -617,7 +640,7 @@ mark {
   background: #e2e8f0;
 }
 .dark .profile-dropdown-divider {
-  background: #334155;
+  background: #414141;
 }
 .profile-dropdown-logout {
   color: #dc2626 !important;
@@ -626,7 +649,67 @@ mark {
   background: #fef2f2 !important;
 }
 .dark .profile-dropdown-logout:hover {
-  background: #450a0a !important;
+  background: #4a3030 !important;
+}
+
+.document-actions-menu {
+  transform-origin: top right;
+}
+.document-actions-menu[data-state="open"] {
+  animation: menu-expand-diagonal 200ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.document-actions-menu[data-state="closed"] {
+  animation: menu-collapse-diagonal 200ms cubic-bezier(0.4, 0, 1, 1) both;
+  pointer-events: none;
+}
+.settings-dialog {
+  transform-origin: top right;
+}
+.settings-dialog[data-state="open"] {
+  animation: settings-expand-diagonal 200ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.settings-dialog[data-state="closed"] {
+  animation: settings-collapse-diagonal 200ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+@keyframes menu-expand-diagonal {
+  from {
+    clip-path: inset(0 0 100% 0 round 8px);
+    transform: scale(0.96, 0.82);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 8px);
+    transform: scale(1, 1);
+  }
+}
+@keyframes menu-collapse-diagonal {
+  from {
+    clip-path: inset(0 0 0 0 round 8px);
+    transform: scale(1, 1);
+  }
+  to {
+    clip-path: inset(0 0 100% 0 round 8px);
+    transform: scale(0.96, 0.82);
+  }
+}
+@keyframes settings-expand-diagonal {
+  from {
+    clip-path: inset(0 0 100% 100% round 16px);
+    transform: scale(0.12, 0.12);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 16px);
+    transform: scale(1, 1);
+  }
+}
+@keyframes settings-collapse-diagonal {
+  from {
+    clip-path: inset(0 0 0 0 round 16px);
+    transform: scale(1, 1);
+  }
+  to {
+    clip-path: inset(0 0 100% 100% round 16px);
+    transform: scale(0.12, 0.12);
+  }
 }
 
 #signup-root {
@@ -745,37 +828,37 @@ mark {
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: #292929;
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: #303030;
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: #303030;
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  --primary: #454545;
+  --primary-foreground: #f5f5f5;
+  --secondary: #383838;
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --muted: #383838;
+  --muted-foreground: #b0b0b0;
+  --accent: #383838;
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --border: #414141;
+  --input: #505050;
+  --ring: #777777;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
+  --sidebar: #303030;
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent: #383838;
   --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-border: #414141;
+  --sidebar-ring: #777777;
 }
 
 @layer base {
@@ -795,5 +878,49 @@ mark {
   }
   100% {
     background-position: -100% 0;
+  }
+}
+
+.ask-button-shimmer {
+  --ask-sweep-width: 34%;
+  background: linear-gradient(110deg, #8b5cf6, #3b82f6, #8b5cf6);
+  background-size: 220% 100%;
+  animation: ask-button-gradient 3s ease-in-out infinite;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.ask-button-shimmer::after {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--ask-sweep-width);
+  content: "";
+  background: linear-gradient(
+    105deg,
+    transparent,
+    rgb(255 255 255 / 30%),
+    transparent
+  );
+  transform: translateX(-120%);
+  animation: ask-button-sheen 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes ask-button-gradient {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes ask-button-sheen {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(400%);
   }
 }
