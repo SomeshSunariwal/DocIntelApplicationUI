@@ -17,7 +17,7 @@ export default function UploadPanel({ onFiles, uploadError }) {
   };
 
   return (
-    <section className="surface rounded-xl border border-slate-200 bg-white p-3.5 shadow-soft dark:bg-[#111a2d]">
+    <section className="surface rounded-xl border border-slate-200 bg-white p-3.5 shadow-soft dark:bg-[#303030]">
       <h2 className="mb-3 text-[17px] font-bold">Upload Documents</h2>
       <div
         onDragOver={(e) => {
@@ -30,7 +30,7 @@ export default function UploadPanel({ onFiles, uploadError }) {
           setDrag(false);
           handleFiles([...e.dataTransfer.files]);
         }}
-        className={`flex h-54 flex-col items-center justify-center rounded-lg border border-dashed px-3 pt-4 pb-2 text-center transition ${drag ? "border-blue-500 bg-blue-50/60" : "border-blue-300"} dark:border-blue-800 dark:bg-slate-950/20`}
+        className={`flex h-54 flex-col items-center justify-center rounded-lg border border-dashed px-3 pt-4 pb-2 text-center transition ${drag ? "border-blue-500 bg-blue-50/60" : "border-blue-300"} dark:border-[#505050] dark:bg-[#383838]`}
       >
         <CloudUpload size={42} className="mb-2 text-blue-600" />
         <div className="text-[13px] font-medium">
@@ -41,7 +41,7 @@ export default function UploadPanel({ onFiles, uploadError }) {
           {pills.map((t) => (
             <span
               key={t}
-              className="rounded bg-slate-100 px-2 py-1 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+              className="rounded bg-slate-100 px-2 py-1 text-[10px] font-medium text-slate-600 dark:bg-[#414141] dark:text-slate-300"
             >
               {t}
             </span>

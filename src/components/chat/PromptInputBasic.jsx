@@ -140,7 +140,6 @@ export function PromptInputBasic({
     setStreamMessageId(null);
   }, [streamError, streamLoading, streamMessageId]);
 
-  // TODO: Include selectedVersion in the chat request so the backend uses that document version.
   const handleSubmit = () => {
     const message = input.trim();
 
@@ -161,7 +160,7 @@ export function PromptInputBasic({
     setInput("");
     setIsLoading(true);
     setStreamMessageId(assistantMessageId);
-    dispatch(chatStreamAction(message, documentId));
+    dispatch(chatStreamAction(message, documentId, selectedVersion));
   };
 
   const handleValueChange = (value) => {
@@ -174,7 +173,7 @@ export function PromptInputBasic({
         CHAT MESSAGES
         ========================= */}
       <div className="relative min-h-0 flex-1 overflow-hidden">
-        <div className="absolute left-4 top-3 z-20 flex items-center text-[12px]  rounded-full border border-slate-200 bg-white/95 p-1 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
+        <div className="absolute left-4 top-3 z-20 flex items-center text-[12px]  rounded-full border border-slate-200 bg-white/95 p-1 shadow-sm backdrop-blur dark:border-[#414141] dark:bg-[#303030]">
           <span
             className={`pointer-events-none absolute bottom-1 top-1 w-[calc(50%-4px)] rounded-full bg-blue-600 transition-transform duration-200 ${chatMode === "static" ? "translate-x-full" : "translate-x-0"}`}
             aria-hidden="true"
@@ -222,8 +221,8 @@ export function PromptInputBasic({
                     markdown={message.role === "assistant"}
                     className={
                       message.role === "user"
-                        ? "bg-gray-50 text-black dark:bg-gray-800 dark:text-white text-[14px]"
-                        : "bg-gray-50 text-black dark:bg-gray-800 dark:text-white text-[14px]"
+                        ? "bg-gray-50 text-black dark:bg-[#383838] dark:text-white text-[14px]"
+                        : "bg-gray-50 text-black dark:bg-[#383838] dark:text-white text-[14px]"
                     }
                   >
                     {message.content}
@@ -300,13 +299,13 @@ export function PromptInputBasic({
                       aria-label="Select document version"
                       aria-expanded={versionMenuOpen}
                       onClick={() => setVersionMenuOpen((open) => !open)}
-                      className="flex shrink-0 items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                      className="flex shrink-0 items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-100 dark:border-[#414141] dark:bg-[#383838] dark:text-slate-300 dark:hover:bg-[#414141]"
                     >
                       <span>v{selectedVersion}</span>
                       <ChevronUp size={13} />
                     </button>
                     {versionMenuOpen && (
-                      <div className="absolute bottom-full left-0 z-30 mb-2 min-w-24 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+                      <div className="absolute bottom-full left-0 z-30 mb-2 min-w-24 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-lg dark:border-[#414141] dark:bg-[#303030]">
                         {Array.from({ length: versionCount }, (_, index) => {
                           const version = index + 1;
                           return (
@@ -317,7 +316,7 @@ export function PromptInputBasic({
                                 setSelectedVersion(version);
                                 setVersionMenuOpen(false);
                               }}
-                              className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-1.5 text-left text-xs hover:bg-slate-100 dark:hover:bg-slate-800 ${version === selectedVersion ? "font-semibold text-blue-600 dark:text-blue-400" : "text-slate-600 dark:text-slate-300"}`}
+                              className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-1.5 text-left text-xs hover:bg-slate-100 dark:hover:bg-[#383838] ${version === selectedVersion ? "font-semibold text-blue-600 dark:text-blue-400" : "text-slate-600 dark:text-slate-300"}`}
                             >
                               v{version}
                               {version === selectedVersion && (
@@ -332,7 +331,7 @@ export function PromptInputBasic({
                 )}
                 {documentName && (
                   <div
-                    className="flex min-w-0 items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                    className="flex min-w-0 items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600 dark:border-[#414141] dark:bg-[#383838] dark:text-slate-300"
                     title={documentName}
                   >
                     <span className="truncate">{documentName}</span>

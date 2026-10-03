@@ -6,8 +6,11 @@ import {
   getAuthToken,
 } from "../../constants";
 
-function getAllUserDocuments() {
-  const API_LINK = HomeEndpoint + API_URL.GET_ALL_USER_DOCUMENTS;
+function getAllUserDocuments(action) {
+  const page = Number.isInteger(action.payload?.page)
+    ? action.payload.page
+    : 0;
+  const API_LINK = `${HomeEndpoint}${API_URL.GET_ALL_USER_DOCUMENTS}?page=${page}`;
 
   return fetch(API_LINK, {
     method: "GET",
@@ -25,7 +28,17 @@ function* fetchGetAllUserDocuments(action) {
     if (response.errorCode === undefined) {
       yield put({
         type: GetUserAllDocumentsActions.GET_USER_DOCUMENTS_COMPLETED,
-        payload: response,
+        payload: {
+          response,
+          append: Boolean(action.payload?.append),
+          page: action.payload?.page ?? 0,
+          pageEmpty:
+            (Array.isArray(response?.documents)
+              ? response.documents
+              : Array.isArray(response)
+                ? response
+                : []).length === 0,
+        },
       });
     } else {
       yield put({
