@@ -122,6 +122,9 @@ export default function Dashboard({ onLogout }) {
   const { loading: uploadLoading, error: uploadError } = useSelector(
     (state) => state.rootReducer.filesUpload,
   );
+  const userInformation = useSelector(
+    (state) => state.rootReducer.getUserInformation.data,
+  );
   const {
     loading: configLoading,
     error: configError,
@@ -132,10 +135,7 @@ export default function Dashboard({ onLogout }) {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
-  useEffect(
-    () => () => window.clearTimeout(settingsCloseTimerRef.current),
-    [],
-  );
+  useEffect(() => () => window.clearTimeout(settingsCloseTimerRef.current), []);
 
   const openSettings = () => {
     window.clearTimeout(settingsCloseTimerRef.current);
@@ -190,12 +190,7 @@ export default function Dashboard({ onLogout }) {
   }, [loading, error, lastPage, lastPageEmpty]);
 
   useEffect(() => {
-    if (
-      !loading &&
-      documentResponse &&
-      lastPage === 0 &&
-      !lastPageAppend
-    ) {
+    if (!loading && documentResponse && lastPage === 0 && !lastPageAppend) {
       setHasMoreDocuments(!lastPageEmpty);
     }
   }, [loading, documentResponse, lastPage, lastPageAppend, lastPageEmpty]);
@@ -356,6 +351,7 @@ export default function Dashboard({ onLogout }) {
         setDark={setDark}
         onLogout={onLogout}
         onSettingsClick={openSettings}
+        userName={userInformation?.username?.trim() || userInformation?.email?.trim() || "User"}
       />
       {settingsMounted && (
         <ConfigModal

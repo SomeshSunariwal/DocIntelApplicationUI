@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Navigate,
@@ -9,8 +9,9 @@ import {
 } from "react-router-dom";
 import LoginOverlay from "./components/auth/LoginOverlay";
 import SignupOverlay from "./components/auth/SignupOverlay";
-import Dashboard from "./components/dashboard/dashboard";
+import Dashboard from "./components/dashboard/Dashboard";
 import { userVerifyAction } from "./components/apis/actions/userVerifyAction";
+import { getUserInformationAction } from "./components/apis/actions/getUserInformationAction";
 
 const TOKEN_STORAGE_KEY = "token";
 
@@ -40,12 +41,13 @@ export default function App() {
 
     if (userVerifyResponse.validate) {
       setAuthState("signed-in");
+      dispatch(getUserInformationAction());
       return;
     }
 
     localStorage.removeItem(TOKEN_STORAGE_KEY);
     setAuthState("signed-out");
-  }, [userVerifyResponse]);
+  }, [userVerifyResponse, dispatch]);
 
   useEffect(() => {
     if (!userVerifyError) return;

@@ -29,6 +29,8 @@ export const API_URL = {
   DELETE_DOCUMENT: "/users/documents",
   GET_ALL_USER_DOCUMENTS: "/users/documents",
   ADD_UPDATE_CONFIG: "/users/config",
+  GET_USER_INFORMATION: "/users",
+  GET_USER_AI_CONFIG: "/users/config",
   CHAT_STREAM: "/chat",
   SEGMENTED_SEARCH: "/users/search",
   AI_SEARCH: "/users/chat",
@@ -128,6 +130,20 @@ export const UserVerifyActions = {
   USER_VERIFY_REQUESTED: "USER_VERIFY_REQUESTED",
   USER_VERIFY_COMPLETED: "USER_VERIFY_COMPLETED",
   USER_VERIFY_ERROR: "USER_VERIFY_ERROR",
+};
+
+// GET /api/users
+export const GetUserInformationActions = {
+  GET_USER_INFORMATION_REQUESTED: "GET_USER_INFORMATION_REQUESTED",
+  GET_USER_INFORMATION_ERROR: "GET_USER_INFORMATION_ERROR",
+  GET_USER_INFORMATION_COMPLETED: "GET_USER_INFORMATION_COMPLETED",
+};
+
+// GET /api/users/config
+export const GetUserAIConfigActions = {
+  GET_USER_AI_CONFIG_REQUESTED: "GET_USER_AI_CONFIG_REQUESTED",
+  GET_USER_AI_CONFIG_ERROR: "GET_USER_AI_CONFIG_ERROR",
+  GET_USER_AI_CONFIG_COMPLETED: "GET_USER_AI_CONFIG_COMPLETED",
 };
 
 // Get /api/users/documents/{documentId}/summery.

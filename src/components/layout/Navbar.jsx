@@ -1,17 +1,27 @@
-import React from "react";
 import {
   Bell,
-  ChevronDown,
-  Command,
-  FileText,
   Home,
-  Search,
   Settings,
   Sun,
   Moon,
   MessageSquareText,
 } from "lucide-react";
-export default function Navbar({ dark, setDark, onLogout, onSettingsClick }) {
+import ProfileMenu from "./ProfileMenu";
+
+export default function Navbar({
+  dark,
+  setDark,
+  onLogout,
+  onSettingsClick,
+  userName = "User",
+}) {
+  const userInitials = userName
+    .split(/[\s@._-]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join("");
+
   return (
     <header className="nav flex h-[66px] shrink-0 items-center border-b border-slate-200 bg-white px-7 shadow-[0_1px_8px_rgba(30,64,175,.04)] dark:border-[#414141] dark:bg-[#303030]">
       <div className="flex w-[330px] items-center gap-3">
@@ -46,10 +56,10 @@ export default function Navbar({ dark, setDark, onLogout, onSettingsClick }) {
         </button>
         <div className="relative flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 to-orange-400 text-xs font-bold">
-            RK
+            {userInitials || "U"}
           </div>
           <div>
-            <div className="text-[13px] font-semibold">Somesh UI</div>
+            <div className="text-[13px] font-semibold">{userName}</div>
             <div className="text-[11px] text-slate-500">Free Plan</div>
           </div>
           <ProfileMenu onLogout={onLogout} />
@@ -69,78 +79,5 @@ function Nav({ icon: Icon, label, active, onClick }) {
       <Icon size={18} />
       {label}
     </button>
-  );
-}
-
-function ProfileMenu({ onLogout }) {
-  const [open, setOpen] = React.useState(false);
-  const [mounted, setMounted] = React.useState(false);
-  const rootRef = React.useRef(null);
-  const closeTimerRef = React.useRef(null);
-
-  const closeMenu = () => {
-    setOpen(false);
-    window.clearTimeout(closeTimerRef.current);
-    closeTimerRef.current = window.setTimeout(() => setMounted(false), 200);
-  };
-
-  React.useEffect(() => {
-    if (!open) return undefined;
-    const handleOutsideClick = (event) => {
-      if (!rootRef.current?.contains(event.target)) closeMenu();
-    };
-    document.addEventListener("pointerdown", handleOutsideClick);
-    return () => document.removeEventListener("pointerdown", handleOutsideClick);
-  }, [open]);
-
-  React.useEffect(
-    () => () => {
-      window.clearTimeout(closeTimerRef.current);
-    },
-    [],
-  );
-
-  return (
-    <div className="relative" ref={rootRef}>
-      <button
-        type="button"
-        onClick={() => {
-          if (open) {
-            closeMenu();
-            return;
-          }
-          window.clearTimeout(closeTimerRef.current);
-          setMounted(true);
-          setOpen(true);
-        }}
-        className="rounded-md p-1 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-[#383838]"
-        aria-label="Open profile menu"
-        aria-expanded={open}
-      >
-        <ChevronDown size={16} />
-      </button>
-      {mounted && (
-        <div
-          className="profile-dropdown"
-          data-state={open ? "open" : "closed"}
-          aria-hidden={!open}
-        >
-          <button type="button" className="profile-dropdown-item">
-            Edit Profile
-          </button>
-          <div className="profile-dropdown-divider" />
-          <button
-            type="button"
-            className="profile-dropdown-item profile-dropdown-logout"
-            onClick={() => {
-              closeMenu();
-              onLogout();
-            }}
-          >
-            Logout
-          </button>
-        </div>
-      )}
-    </div>
   );
 }

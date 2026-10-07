@@ -13,6 +13,8 @@ import deleteUserSaga from "./deleteUserSaga";
 import userLoginSaga from "./userLoginSaga";
 import summerizeDocumentSaga from "./summerizeDocumentSaga";
 import userVerifySaga from "./userVerifySaga";
+import getUserInformationSaga from "./getUserInformationSaga";
+import getUserAIConfigSaga from "./getUserAIConfigSaga";
 
 export default function* rootSaga() {
   yield all([
@@ -30,5 +32,7 @@ export default function* rootSaga() {
     userLoginSaga(),
     summerizeDocumentSaga(),
     userVerifySaga(),
+    getUserInformationSaga(),
+    getUserAIConfigSaga(),
   ]);
 }

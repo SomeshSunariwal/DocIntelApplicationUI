@@ -13,6 +13,8 @@ import { deleteUserReducer } from "./deleteUserReducer";
 import { userLoginReducer } from "./userLoginReducer";
 import { summerizeDocumentReducer } from "./summarizeDocumentReducer";
 import { userVerifyReducer } from "./userVerifyReducer";
+import { getUserInformationReducer } from "./getUserInformationReducer";
+import { getUserAIConfigReducer } from "./getUserAIConfigReducer";
 
 const rootReducer = combineSlices({
   filesUpload: filesUploadReducer,
@@ -29,6 +31,8 @@ const rootReducer = combineSlices({
   userLogin: userLoginReducer,
   summerizeDocument: summerizeDocumentReducer,
   userVerify: userVerifyReducer,
+  getUserInformation: getUserInformationReducer,
+  getUserAIConfig: getUserAIConfigReducer,
 });
 
 export default rootReducer;
