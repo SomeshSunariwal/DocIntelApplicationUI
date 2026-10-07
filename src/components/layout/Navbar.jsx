@@ -7,6 +7,7 @@ import {
   MessageSquareText,
 } from "lucide-react";
 import ProfileMenu from "./ProfileMenu";
+import userImage from "../../../resources/user.png";
 
 export default function Navbar({
   dark,
@@ -15,13 +16,6 @@ export default function Navbar({
   onSettingsClick,
   userName = "User",
 }) {
-  const userInitials = userName
-    .split(/[\s@._-]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0].toUpperCase())
-    .join("");
-
   return (
     <header className="nav flex h-[66px] shrink-0 items-center border-b border-slate-200 bg-white px-7 shadow-[0_1px_8px_rgba(30,64,175,.04)] dark:border-[#414141] dark:bg-[#303030]">
       <div className="flex w-[330px] items-center gap-3">
@@ -37,7 +31,7 @@ export default function Navbar({
           </div>
         </div>
       </div>
-      <nav className="flex flex-1 items-center gap-1 text-[14px]">
+      <nav className="flex flex-1 items-center gap-1 text-[13px]">
         <Nav active icon={Home} label="Dashboard" />
         <Nav icon={MessageSquareText} label="Chat" />
         <Nav icon={Settings} label="Settings" onClick={onSettingsClick} />
@@ -55,9 +49,11 @@ export default function Navbar({
           {dark ? <Sun size={18} /> : <Moon size={18} />}
         </button>
         <div className="relative flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 to-orange-400 text-xs font-bold">
-            {userInitials || "U"}
-          </div>
+          <img
+            src={userImage}
+            alt="User profile"
+            className="h-9 w-9 rounded-full border border-slate-300 object-cover dark:border-[#606060]"
+          />
           <div>
             <div className="text-[13px] font-semibold">{userName}</div>
             <div className="text-[11px] text-slate-500">Free Plan</div>

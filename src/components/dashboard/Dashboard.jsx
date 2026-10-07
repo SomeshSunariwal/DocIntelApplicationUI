@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import Navbar from "../layout/Navbar";
 import UploadPanel from "../upload/UploadPanel";
 import DocumentList from "../documents/DocumentList";
+import DocumentDetailsModal from "../documents/DocumentDetailsModal";
+import UpdateDocumentModal from "../documents/UpdateDocumentModal";
 import TotalDocuments from "../documents/TotalDocuments";
 import GlobalSearch from "../search/GlobalSearch";
 import DocumentViewer from "../viewer/DocumentViewer";
@@ -83,8 +85,12 @@ const mapApiDocument = (document, parentDocument = null) => {
 
   return {
     id: document.documentId || parentDocument?.documentId,
+    documentId: document.documentId || parentDocument?.documentId,
     name: document.fileName || "Untitled document",
+    fileName: document.fileName || "Untitled document",
+    fileSize: document.fileSize,
     type,
+    fileExtensions: document.fileExtensions || type.toUpperCase(),
     size: formatFileSize(document.fileSize),
     date: formatDate(document.updatedAt || document.createdAt),
     status: mapDocumentStatus(apiStatus),
@@ -92,6 +98,10 @@ const mapApiDocument = (document, parentDocument = null) => {
     pages: Number(document.pages || document.chunks) || 1,
     url: document.URI || document.uri || document.url || "",
     version: document.version || 1,
+    chunks: document.chunks,
+    URI: document.URI || document.uri || document.url || "",
+    createdAt: document.createdAt || parentDocument?.createdAt,
+    updatedAt: document.updatedAt || parentDocument?.updatedAt,
   };
 };
 
@@ -104,6 +114,8 @@ export default function Dashboard({ onLogout }) {
   const [uploadSubmitted, setUploadSubmitted] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsMounted, setSettingsMounted] = useState(false);
+  const [detailsDocument, setDetailsDocument] = useState(null);
+  const [updateDocument, setUpdateDocument] = useState(null);
   const [hasMoreDocuments, setHasMoreDocuments] = useState(true);
   const dispatch = useDispatch();
   const nextPageRef = useRef(1);
@@ -364,11 +376,27 @@ export default function Dashboard({ onLogout }) {
           successMessage={configSuccess ? savedConfigResponse?.message : null}
         />
       )}
+      {detailsDocument && (
+        <DocumentDetailsModal
+          document={detailsDocument}
+          onClose={() => setDetailsDocument(null)}
+        />
+      )}
+      {updateDocument && (
+        <UpdateDocumentModal
+          document={updateDocument}
+          onClose={() => setUpdateDocument(null)}
+          onFiles={addFiles}
+          uploadError={uploadError}
+        />
+      )}
       <main className="app-main grid min-h-0 flex-1 grid-cols-[348px_minmax(0,1fr)] gap-4 overflow-hidden px-7 py-3.5">
         <aside className="sidebar-grid grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden">
           <UploadPanel onFiles={addFiles} uploadError={uploadError} />
           <DocumentList
             documents={documents}
+            onShowDetails={setDetailsDocument}
+            onUpdateDocument={setUpdateDocument}
             setDocuments={setDocuments}
             totalCount={documents.length}
             selectedId={selectedId}

@@ -12,7 +12,7 @@ import { ChatContainerContent, ChatContainerRoot } from "../ui/chat-container";
 import { ScrollButton } from "../ui/scroll-button";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, Check, ChevronUp, Copy, Square } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { chatStreamAction } from "../apis/actions/chatStreamAction";
 import { aiSearchAction } from "../apis/actions/aiSearchAction";
@@ -33,6 +33,7 @@ export function PromptInputBasic({
   const [staticMessageId, setStaticMessageId] = useState(null);
   const [copiedMessageId, setCopiedMessageId] = useState(null);
   const [versionMenuOpen, setVersionMenuOpen] = useState(false);
+  const versionMenuRef = useRef(null);
   const versionCount = Math.max(0, Math.floor(Number(documentVersion) || 0));
   const [selectedVersion, setSelectedVersion] = useState(versionCount || 1);
 
@@ -40,6 +41,19 @@ export function PromptInputBasic({
     setSelectedVersion(versionCount || 1);
     setVersionMenuOpen(false);
   }, [documentId, versionCount]);
+
+  useEffect(() => {
+    if (!versionMenuOpen) return;
+
+    const handlePointerDown = (event) => {
+      if (!versionMenuRef.current?.contains(event.target)) {
+        setVersionMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [versionMenuOpen]);
 
   const {
     data: streamChunks,
@@ -404,7 +418,10 @@ export function PromptInputBasic({
             <PromptInputTextarea placeholder="Ask me anything..." />
 
             <PromptInputActions className="justify-between pt-2">
-              <div className="relative flex min-w-0 max-w-[75%] items-center gap-1.5 text-[12px]">
+              <div
+                ref={versionMenuRef}
+                className="relative flex min-w-0 max-w-[75%] items-center gap-1.5 text-[12px]"
+              >
                 {versionCount > 0 && (
                   <>
                     <button

@@ -4,7 +4,12 @@ import { CloudUpload, FolderOpen } from "lucide-react";
 const allowed = ["pdf", "doc", "docx", "txt"];
 const pills = ["PDF", "DOC", "DOCX", "TXT"];
 
-export default function UploadPanel({ onFiles, uploadError }) {
+export default function UploadPanel({
+  onFiles,
+  uploadError,
+  singleFile = false,
+  title = "Upload Documents",
+}) {
   const ref = useRef();
   const [drag, setDrag] = useState(false);
 
@@ -13,12 +18,13 @@ export default function UploadPanel({ onFiles, uploadError }) {
       const ext = f.name.split(".").pop().toLowerCase();
       return allowed.includes(ext) && f.size <= 50 * 1024 * 1024;
     });
-    if (valid.length) onFiles(valid);
+    const selectedFiles = singleFile ? valid.slice(0, 1) : valid;
+    if (selectedFiles.length) onFiles(selectedFiles);
   };
 
   return (
     <section className="surface rounded-xl border border-slate-200 bg-white p-3.5 shadow-soft dark:bg-[#303030]">
-      <h2 className="mb-3 text-[17px] font-bold">Upload Documents</h2>
+      <h2 className="mb-3 text-[17px] font-bold">{title}</h2>
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -58,7 +64,7 @@ export default function UploadPanel({ onFiles, uploadError }) {
           ref={ref}
           type="file"
           hidden
-          multiple
+          multiple={!singleFile}
           accept=".pdf,.txt,.doc,.docx"
           onChange={(e) => {
             handleFiles([...e.target.files]);
