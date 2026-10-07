@@ -196,16 +196,6 @@ export default function ConfigModal({
           </button>
         </div>
 
-        {configLoading && (
-          <div
-            role="status"
-            className="mb-4 flex items-center justify-center gap-2 text-sm text-slate-500 dark:text-slate-400"
-          >
-            <LoaderCircle size={17} className="animate-spin" />
-            Loading configuration…
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block text-sm font-medium">
             Type
