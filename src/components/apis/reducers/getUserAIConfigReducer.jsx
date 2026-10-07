@@ -6,7 +6,7 @@ export const getUserAIConfigReducer = (state = initialState, action) => {
   switch (action.type) {
     case GetUserAIConfigActions.GET_USER_AI_CONFIG_REQUESTED:
       return {
-        ...state,
+        data: null,
         loading: true,
         error: null,
       };

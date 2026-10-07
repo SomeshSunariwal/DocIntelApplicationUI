@@ -126,6 +126,7 @@ export default function Dashboard({ onLogout }) {
     (state) => state.rootReducer.getUserInformation.data,
   );
   const {
+    data: savedConfigResponse,
     loading: configLoading,
     error: configError,
     success: configSuccess,
@@ -360,7 +361,7 @@ export default function Dashboard({ onLogout }) {
           onSave={(config) => dispatch(addOrUpdateConfigAction(config))}
           loading={configLoading}
           error={configError}
-          success={configSuccess}
+          successMessage={configSuccess ? savedConfigResponse?.message : null}
         />
       )}
       <main className="app-main grid min-h-0 flex-1 grid-cols-[348px_minmax(0,1fr)] gap-4 overflow-hidden px-7 py-3.5">

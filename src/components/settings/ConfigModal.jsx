@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Check, ChevronDown, X } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { Check, ChevronDown, LoaderCircle, X } from "lucide-react";
+import { getUserAIConfigAction } from "../apis/actions/getUserAIConfigAction";
+import { aiSearchAction } from "../apis/actions/aiSearchAction";
 import localAIIcon from "../../../resources/localai.png";
 import openAIIcon from "../../../resources/openai.png";
 import ollamaIcon from "../../../resources/ollama.png";
@@ -35,11 +38,83 @@ export default function ConfigModal({
   onSave,
   loading,
   error,
-  success,
+  successMessage,
 }) {
   const [config, setConfig] = useState(DEFAULT_CONFIG);
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [connectionResult, setConnectionResult] = useState(null);
+  const [informationMode, setInformationMode] = useState("config");
+  const [configLoading, setConfigLoading] = useState(false);
   const [providerOpen, setProviderOpen] = useState(false);
   const providerRef = useRef(null);
+  const requestedRef = useRef(false);
+  const apiRequestObservedRef = useRef(false);
+  const aiSearchObservedLoadingRef = useRef(false);
+  const dispatch = useDispatch();
+  const {
+    data: fetchedConfig,
+    loading: apiConfigLoading,
+    error: configError,
+  } = useSelector((state) => state.rootReducer.getUserAIConfig);
+  const {
+    data: aiSearchResponse,
+    loading: aiSearchLoading,
+    error: aiSearchError,
+  } = useSelector((state) => state.rootReducer.aiSearch);
+
+  useEffect(() => {
+    if (!open) {
+      requestedRef.current = false;
+      apiRequestObservedRef.current = false;
+      setConfigLoading(false);
+      setConfig(DEFAULT_CONFIG);
+      return;
+    }
+    if (!requestedRef.current) {
+      requestedRef.current = true;
+      apiRequestObservedRef.current = false;
+      setConfig(DEFAULT_CONFIG);
+      setConfigLoading(true);
+      dispatch(getUserAIConfigAction());
+    }
+  }, [open, dispatch]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (apiConfigLoading) {
+      apiRequestObservedRef.current = true;
+      return;
+    }
+    if (!apiRequestObservedRef.current) return;
+
+    apiRequestObservedRef.current = false;
+    setConfigLoading(false);
+    if (fetchedConfig) setConfig({ ...DEFAULT_CONFIG, ...fetchedConfig });
+  }, [open, apiConfigLoading, fetchedConfig, configError]);
+
+  useEffect(() => {
+    if (!testingConnection) return;
+    if (aiSearchLoading) {
+      aiSearchObservedLoadingRef.current = true;
+      return;
+    }
+    if (!aiSearchObservedLoadingRef.current) return;
+
+    aiSearchObservedLoadingRef.current = false;
+    setTestingConnection(false);
+    if (aiSearchError) {
+      setConnectionResult({ text: aiSearchError, isError: true });
+      return;
+    }
+    const responseText =
+      typeof aiSearchResponse === "string"
+        ? aiSearchResponse
+        : aiSearchResponse?.result;
+    setConnectionResult({
+      text: responseText || "Connection test completed without a result.",
+      isError: false,
+    });
+  }, [testingConnection, aiSearchLoading, aiSearchError, aiSearchResponse]);
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -52,12 +127,36 @@ export default function ConfigModal({
   const updateField = (event) => {
     const { name, value } = event.target;
     setConfig((current) => ({ ...current, [name]: value }));
+    setConnectionResult(null);
+  };
+
+  const testConnection = () => {
+    setInformationMode("test");
+    setTestingConnection(true);
+    aiSearchObservedLoadingRef.current = false;
+    setConnectionResult(null);
+    dispatch(aiSearchAction("Replay Connection is Working"));
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    setInformationMode("save");
+    setConnectionResult(null);
     onSave({ ...config });
   };
+
+  const informationMessage =
+    informationMode === "test"
+      ? connectionResult?.text
+      : informationMode === "save"
+        ? error || successMessage
+        : configError || fetchedConfig?.message;
+  const informationIsError =
+    informationMode === "test"
+      ? Boolean(connectionResult?.isError)
+      : informationMode === "save"
+        ? Boolean(error)
+        : Boolean(configError);
 
   const fieldClassName =
     "mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-[#505050] dark:bg-[#383838] dark:text-slate-100";
@@ -66,7 +165,8 @@ export default function ConfigModal({
     <div
       className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget && !loading) onClose();
+        if (event.target === event.currentTarget && !loading && !configLoading)
+          onClose();
       }}
     >
       <section
@@ -88,13 +188,23 @@ export default function ConfigModal({
           <button
             type="button"
             onClick={onClose}
-            disabled={loading}
+            disabled={loading || configLoading}
             aria-label="Close configuration"
             className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-[#383838]"
           >
             <X size={18} />
           </button>
         </div>
+
+        {configLoading && (
+          <div
+            role="status"
+            className="mb-4 flex items-center justify-center gap-2 text-sm text-slate-500 dark:text-slate-400"
+          >
+            <LoaderCircle size={17} className="animate-spin" />
+            Loading configuration…
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block text-sm font-medium">
@@ -106,6 +216,7 @@ export default function ConfigModal({
                 aria-expanded={providerOpen}
                 aria-label={`Provider: ${config.type}`}
                 onClick={() => setProviderOpen((open) => !open)}
+                disabled={configLoading || loading}
                 onKeyDown={(event) => {
                   if (["ArrowDown", "ArrowUp"].includes(event.key)) {
                     event.preventDefault();
@@ -215,6 +326,7 @@ export default function ConfigModal({
               value={config.modelName}
               onChange={updateField}
               required
+              disabled={configLoading || loading}
               placeholder="llama-3.2-3b-instruct"
               className={fieldClassName}
             />
@@ -228,6 +340,7 @@ export default function ConfigModal({
               value={config.baseURL}
               onChange={updateField}
               required
+              disabled={configLoading || loading}
               placeholder="http://127.0.0.1:1234/v1"
               className={fieldClassName}
             />
@@ -241,40 +354,65 @@ export default function ConfigModal({
               value={config.apiKey}
               onChange={updateField}
               autoComplete="off"
+              disabled={configLoading || loading}
               placeholder="sk-xxxxxxxxxxxxxxx"
               className={fieldClassName}
             />
           </label>
 
-          {error && (
-            <p role="alert" className="text-sm text-red-500">
-              {error}
-            </p>
-          )}
-          {success && (
-            <p
-              role="status"
-              className="text-sm text-emerald-600 dark:text-emerald-400"
-            >
-              Configuration saved.
-            </p>
-          )}
+          <div
+            role={informationIsError ? "alert" : "status"}
+            aria-live="polite"
+            className={`min-h-10 rounded-lg border px-3 py-2 text-center text-sm ${informationIsError ? "border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300" : "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300"}`}
+          >
+            {informationMessage || (
+              <span
+                aria-hidden="true"
+                className="select-none blur-[3px] animate-[generated-text-shimmer_1.6s_linear_infinite] bg-[linear-gradient(90deg,#64748b_0%,#ffffff_45%,#64748b_100%)] bg-[length:200%_100%] bg-clip-text text-transparent dark:bg-[linear-gradient(90deg,#94a3b8_0%,#ffffff_45%,#94a3b8_100%)]"
+              >
+                Configuration updated successfully
+              </span>
+            )}
+          </div>
 
-          <div className="flex justify-end gap-2 border-t border-slate-200 pt-4 dark:border-[#414141]">
+          <div className="flex justify-end text-[12px] gap-2 border-t border-slate-200 pt-4 dark:border-[#414141]">
+            <button
+              type="button"
+              onClick={testConnection}
+              disabled={testingConnection || configLoading || loading}
+              className="mr-auto rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60 dark:bg-[#454545] dark:hover:bg-[#555555]"
+            >
+              {testingConnection ? (
+                <span className="flex w-full items-center justify-center">
+                  <span className="animate-[generated-text-shimmer_1.6s_linear_infinite] bg-[linear-gradient(90deg,#ffffff_0%,#93c5fd_45%,#ffffff_100%)] bg-[length:200%_100%] bg-clip-text text-transparent">
+                    Testing…
+                  </span>
+                </span>
+              ) : (
+                "Test Connection"
+              )}
+            </button>
             <button
               type="button"
               onClick={onClose}
-              disabled={loading}
+              disabled={loading || configLoading}
               className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 disabled:opacity-50 dark:border-[#505050] dark:text-slate-300 dark:hover:bg-[#383838]"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || configLoading}
               className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60 dark:bg-[#454545] dark:text-slate-100 dark:hover:bg-[#555555]"
             >
-              {loading ? "Saving…" : "Save"}
+              {loading ? (
+                <span className="inline-flex items-center gap-2">
+                  <LoaderCircle size={16} className="animate-spin" />
+                  Saving…
+                </span>
+              ) : (
+                "Save"
+              )}
             </button>
           </div>
         </form>

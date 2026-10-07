@@ -30,7 +30,7 @@ export default function UploadPanel({ onFiles, uploadError }) {
           setDrag(false);
           handleFiles([...e.dataTransfer.files]);
         }}
-        className={`flex h-54 flex-col items-center justify-center rounded-lg border border-dashed px-3 pt-4 pb-2 text-center transition ${drag ? "border-blue-500 bg-blue-50/60" : "border-blue-300"} dark:border-[#505050] dark:bg-[#383838]`}
+        className={`flex text-[12px] h-54 flex-col items-center justify-center rounded-lg border border-dashed px-3 pt-4 pb-2 text-center transition ${drag ? "border-blue-500 bg-blue-50/60" : "border-blue-300"} dark:border-[#505050] dark:bg-[#383838]`}
       >
         <CloudUpload size={42} className="mb-2 text-blue-600" />
         <div className="text-[13px] font-medium">
