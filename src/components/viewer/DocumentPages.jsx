@@ -51,7 +51,7 @@ export default function DocumentPages({
               >
                 {shouldRender ? (
                   <PdfPage
-                    key={`${p}-${refreshKey}`}
+                    key={`${doc.version}-${p}-${refreshKey}`}
                     pdf={pdf}
                     pageNumber={p}
                     scale={zoom / 100}

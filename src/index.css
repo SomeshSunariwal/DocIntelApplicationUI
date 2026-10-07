@@ -662,6 +662,23 @@ mark {
   animation: menu-collapse-diagonal 200ms cubic-bezier(0.4, 0, 1, 1) both;
   pointer-events: none;
 }
+.version-dropdown {
+  opacity: 0;
+  transform: translateY(-7px) scale(0.98);
+  transform-origin: top right;
+  transition:
+    opacity 160ms ease,
+    transform 190ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+.version-dropdown[data-state="open"] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+.version-dropdown[data-state="closed"] {
+  pointer-events: none;
+}
 .settings-dialog {
   transform-origin: top right;
 }
@@ -969,7 +986,8 @@ mark {
 
 @media (prefers-reduced-motion: reduce) {
   .document-details-backdrop,
-  .document-details-panel {
+  .document-details-panel,
+  .version-dropdown {
     transition-duration: 1ms;
   }
 }

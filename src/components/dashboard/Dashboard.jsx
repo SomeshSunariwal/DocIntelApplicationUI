@@ -12,6 +12,7 @@ import ConfigModal from "../settings/ConfigModal";
 import { getUserAllDocumentsAction } from "../apis/actions/getUserAllDocumentsAction";
 import { filesUploadAction } from "../apis/actions/filesUploadAction";
 import { addOrUpdateConfigAction } from "../apis/actions/addOrUpdateConfigAction";
+import { updateDocumentAction } from "../apis/actions/updateDocumentAction";
 
 const formatDate = (value) => {
   if (!value) return "—";
@@ -67,13 +68,28 @@ const mapApiDocument = (document, parentDocument = null) => {
       const versionNumber = Number(version.version) || 0;
       return versionNumber > latestNumber ? version : latest;
     });
-    return mapApiDocument(
+    const mappedLatest = mapApiDocument(
       {
         ...latestVersion,
         documentId: latestVersion.documentId || document.documentId,
       },
       document,
     );
+    return {
+      ...mappedLatest,
+      latestVersion: Number(latestVersion.version) || 1,
+      versions: versions
+        .map((version) =>
+          mapApiDocument(
+            {
+              ...version,
+              documentId: version.documentId || document.documentId,
+            },
+            document,
+          ),
+        )
+        .sort((a, b) => Number(a.version) - Number(b.version)),
+    };
   }
 
   const type = String(
@@ -116,6 +132,7 @@ export default function Dashboard({ onLogout }) {
   const [settingsMounted, setSettingsMounted] = useState(false);
   const [detailsDocument, setDetailsDocument] = useState(null);
   const [updateDocument, setUpdateDocument] = useState(null);
+  const [updateSubmitted, setUpdateSubmitted] = useState(false);
   const [hasMoreDocuments, setHasMoreDocuments] = useState(true);
   const dispatch = useDispatch();
   const nextPageRef = useRef(1);
@@ -134,6 +151,10 @@ export default function Dashboard({ onLogout }) {
   const { loading: uploadLoading, error: uploadError } = useSelector(
     (state) => state.rootReducer.filesUpload,
   );
+  const {
+    loading: documentUpdateLoading,
+    error: documentUpdateError,
+  } = useSelector((state) => state.rootReducer.updateDocument);
   const userInformation = useSelector(
     (state) => state.rootReducer.getUserInformation.data,
   );
@@ -336,6 +357,24 @@ export default function Dashboard({ onLogout }) {
     setUploadSubmitted(false);
   }, [dispatch, uploadLoading, uploadError, uploading, uploadSubmitted]);
 
+  useEffect(() => {
+    if (!updateSubmitted || documentUpdateLoading) return;
+
+    if (!documentUpdateError) {
+      setUpdateDocument(null);
+      dispatch(getUserAllDocumentsAction({ page: 0, append: true }));
+    }
+    setUpdateSubmitted(false);
+  }, [dispatch, documentUpdateLoading, documentUpdateError, updateSubmitted]);
+
+  const updateDocumentFile = (files) => {
+    const file = files[0];
+    const documentId = updateDocument?.documentId || updateDocument?.id;
+    if (!file || !documentId) return;
+    setUpdateSubmitted(true);
+    dispatch(updateDocumentAction(documentId, file));
+  };
+
   const totalSize = useMemo(() => {
     let mb = 0;
     documents
@@ -386,8 +425,9 @@ export default function Dashboard({ onLogout }) {
         <UpdateDocumentModal
           document={updateDocument}
           onClose={() => setUpdateDocument(null)}
-          onFiles={addFiles}
-          uploadError={uploadError}
+          onFiles={updateDocumentFile}
+          uploadError={documentUpdateError}
+          loading={documentUpdateLoading}
         />
       )}
       <main className="app-main grid min-h-0 flex-1 grid-cols-[348px_minmax(0,1fr)] gap-4 overflow-hidden px-7 py-3.5">

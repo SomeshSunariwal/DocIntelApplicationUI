@@ -7,12 +7,13 @@ export default function UpdateDocumentModal({
   onClose,
   onFiles,
   uploadError,
+  loading,
 }) {
   return createPortal(
     <div
       className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/75 p-4 backdrop-blur-md"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        if (event.target === event.currentTarget && !loading) onClose();
       }}
     >
       <section
@@ -28,6 +29,7 @@ export default function UpdateDocumentModal({
           <button
             type="button"
             onClick={onClose}
+            disabled={loading}
             aria-label="Close update document dialog"
             className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-[#383838]"
           >
@@ -46,11 +48,14 @@ export default function UpdateDocumentModal({
           singleFile
           title="Upload Document"
           uploadError={uploadError}
-          onFiles={(files) => {
-            onFiles(files);
-            onClose();
-          }}
+          disabled={loading}
+          onFiles={onFiles}
         />
+        {loading && (
+          <div className="mt-3 text-center text-sm text-slate-500 dark:text-slate-400">
+            Updating document...
+          </div>
+        )}
         <div
           role="note"
           className="mt-3 rounded-lg border border-red-300 bg-red-50 px-3 py-2.5 text-xs text-red-700 dark:border-red-900/70 dark:bg-red-950/40 dark:text-red-300"

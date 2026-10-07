@@ -9,6 +9,7 @@ export default function UploadPanel({
   uploadError,
   singleFile = false,
   title = "Upload Documents",
+  disabled = false,
 }) {
   const ref = useRef();
   const [drag, setDrag] = useState(false);
@@ -54,8 +55,10 @@ export default function UploadPanel({
           ))}
         </div>
         <button
+          type="button"
           onClick={() => ref.current?.click()}
-          className="flex w-full max-w-67.5 items-center justify-center gap-2 rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 py-2  font-medium text-white"
+          disabled={disabled}
+          className="flex w-full max-w-67.5 items-center justify-center gap-2 rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 py-2 font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
         >
           <FolderOpen size={16} />
           Choose Files
@@ -64,6 +67,7 @@ export default function UploadPanel({
           ref={ref}
           type="file"
           hidden
+          disabled={disabled}
           multiple={!singleFile}
           accept=".pdf,.txt,.doc,.docx"
           onChange={(e) => {
