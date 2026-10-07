@@ -10,7 +10,7 @@ import {
 } from "../../constants";
 
 function createSummerizeDocumentChannel(action) {
-  const documentId = action.payload;
+  const { documentId, version } = action.payload;
 
   return eventChannel((emit) => {
     const controller = new AbortController();
@@ -19,7 +19,8 @@ function createSummerizeDocumentChannel(action) {
       API_URL.SUMMERIZE_DOCUMENT +
       Separator +
       encodeURIComponent(documentId) +
-      Constant.SUMMERIZE;
+      Constant.SUMMERIZE +
+      `?version=${encodeURIComponent(version)}`;
 
     async function startStream() {
       try {

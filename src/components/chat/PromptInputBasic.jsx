@@ -12,7 +12,7 @@ import { ChatContainerContent, ChatContainerRoot } from "../ui/chat-container";
 import { ScrollButton } from "../ui/scroll-button";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, Check, ChevronUp, Copy, Square } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { chatStreamAction } from "../apis/actions/chatStreamAction";
 import { aiSearchAction } from "../apis/actions/aiSearchAction";
@@ -23,6 +23,8 @@ export function PromptInputBasic({
   documentId,
   documentName,
   documentVersion,
+  selectedVersionValue,
+  onVersionChange,
 }) {
   const dispatch = useDispatch();
   const [input, setInput] = useState("");
@@ -33,13 +35,32 @@ export function PromptInputBasic({
   const [staticMessageId, setStaticMessageId] = useState(null);
   const [copiedMessageId, setCopiedMessageId] = useState(null);
   const [versionMenuOpen, setVersionMenuOpen] = useState(false);
+  const versionMenuRef = useRef(null);
   const versionCount = Math.max(0, Math.floor(Number(documentVersion) || 0));
-  const [selectedVersion, setSelectedVersion] = useState(versionCount || 1);
+  const [internalSelectedVersion, setInternalSelectedVersion] = useState(
+    versionCount || 1,
+  );
+  const selectedVersion = selectedVersionValue ?? internalSelectedVersion;
 
   useEffect(() => {
-    setSelectedVersion(versionCount || 1);
+    if (selectedVersionValue == null) {
+      setInternalSelectedVersion(versionCount || 1);
+    }
     setVersionMenuOpen(false);
-  }, [documentId, versionCount]);
+  }, [documentId, versionCount, selectedVersionValue]);
+
+  useEffect(() => {
+    if (!versionMenuOpen) return;
+
+    const handlePointerDown = (event) => {
+      if (!versionMenuRef.current?.contains(event.target)) {
+        setVersionMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [versionMenuOpen]);
 
   const {
     data: streamChunks,
@@ -59,7 +80,7 @@ export function PromptInputBasic({
     setMessages([]);
     setStreamMessageId(null);
     setStaticMessageId(null);
-  }, [documentId]);
+  }, [documentId, selectedVersion]);
 
   useEffect(() => {
     if (!staticMessageId || staticSearchLoading) return;
@@ -404,7 +425,10 @@ export function PromptInputBasic({
             <PromptInputTextarea placeholder="Ask me anything..." />
 
             <PromptInputActions className="justify-between pt-2">
-              <div className="relative flex min-w-0 max-w-[75%] items-center gap-1.5 text-[12px]">
+              <div
+                ref={versionMenuRef}
+                className="relative flex min-w-0 max-w-[75%] items-center gap-1.5 text-[12px]"
+              >
                 {versionCount > 0 && (
                   <>
                     <button
@@ -414,7 +438,7 @@ export function PromptInputBasic({
                       onClick={() => setVersionMenuOpen((open) => !open)}
                       className="flex shrink-0 items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-100 dark:border-[#414141] dark:bg-[#383838] dark:text-slate-300 dark:hover:bg-[#414141]"
                     >
-                      <span>v{selectedVersion}</span>
+                      <span>Version {selectedVersion}</span>
                       <ChevronUp size={13} />
                     </button>
                     {versionMenuOpen && (
@@ -426,12 +450,13 @@ export function PromptInputBasic({
                               key={version}
                               type="button"
                               onClick={() => {
-                                setSelectedVersion(version);
+                                if (onVersionChange) onVersionChange(version);
+                                else setInternalSelectedVersion(version);
                                 setVersionMenuOpen(false);
                               }}
                               className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-1.5 text-left text-xs hover:bg-slate-100 dark:hover:bg-[#383838] ${version === selectedVersion ? "font-semibold text-blue-600 dark:text-blue-400" : "text-slate-600 dark:text-slate-300"}`}
                             >
-                              v{version}
+                              Version {version}
                               {version === selectedVersion && (
                                 <Check size={13} aria-hidden="true" />
                               )}

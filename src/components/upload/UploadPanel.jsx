@@ -4,7 +4,13 @@ import { CloudUpload, FolderOpen } from "lucide-react";
 const allowed = ["pdf", "doc", "docx", "txt"];
 const pills = ["PDF", "DOC", "DOCX", "TXT"];
 
-export default function UploadPanel({ onFiles, uploadError }) {
+export default function UploadPanel({
+  onFiles,
+  uploadError,
+  singleFile = false,
+  title = "Upload Documents",
+  disabled = false,
+}) {
   const ref = useRef();
   const [drag, setDrag] = useState(false);
 
@@ -13,12 +19,13 @@ export default function UploadPanel({ onFiles, uploadError }) {
       const ext = f.name.split(".").pop().toLowerCase();
       return allowed.includes(ext) && f.size <= 50 * 1024 * 1024;
     });
-    if (valid.length) onFiles(valid);
+    const selectedFiles = singleFile ? valid.slice(0, 1) : valid;
+    if (selectedFiles.length) onFiles(selectedFiles);
   };
 
   return (
     <section className="surface rounded-xl border border-slate-200 bg-white p-3.5 shadow-soft dark:bg-[#303030]">
-      <h2 className="mb-3 text-[17px] font-bold">Upload Documents</h2>
+      <h2 className="mb-3 text-[17px] font-bold">{title}</h2>
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -30,7 +37,7 @@ export default function UploadPanel({ onFiles, uploadError }) {
           setDrag(false);
           handleFiles([...e.dataTransfer.files]);
         }}
-        className={`flex h-54 flex-col items-center justify-center rounded-lg border border-dashed px-3 pt-4 pb-2 text-center transition ${drag ? "border-blue-500 bg-blue-50/60" : "border-blue-300"} dark:border-[#505050] dark:bg-[#383838]`}
+        className={`flex text-[12px] h-54 flex-col items-center justify-center rounded-lg border border-dashed px-3 pt-4 pb-2 text-center transition ${drag ? "border-blue-500 bg-blue-50/60" : "border-blue-300"} dark:border-[#505050] dark:bg-[#383838]`}
       >
         <CloudUpload size={42} className="mb-2 text-blue-600" />
         <div className="text-[13px] font-medium">
@@ -48,8 +55,10 @@ export default function UploadPanel({ onFiles, uploadError }) {
           ))}
         </div>
         <button
+          type="button"
           onClick={() => ref.current?.click()}
-          className="flex w-full max-w-67.5 items-center justify-center gap-2 rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 py-2  font-medium text-white"
+          disabled={disabled}
+          className="flex w-full max-w-67.5 items-center justify-center gap-2 rounded-md bg-gradient-to-r from-indigo-600 to-blue-600 py-2 font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
         >
           <FolderOpen size={16} />
           Choose Files
@@ -58,7 +67,8 @@ export default function UploadPanel({ onFiles, uploadError }) {
           ref={ref}
           type="file"
           hidden
-          multiple
+          disabled={disabled}
+          multiple={!singleFile}
           accept=".pdf,.txt,.doc,.docx"
           onChange={(e) => {
             handleFiles([...e.target.files]);

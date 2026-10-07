@@ -1,8 +1,8 @@
 import { SummerizeDocumentActions } from "../../constants";
 
-export const summerizeDocumentAction = (documentId) => {
+export const summerizeDocumentAction = (documentId, version) => {
   return {
     type: SummerizeDocumentActions.SUMMERIZE_DOCUMENTS_REQUESTED,
-    payload: documentId,
+    payload: { documentId, version },
   };
 };

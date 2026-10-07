@@ -13,6 +13,8 @@ import FileIcon from "../common/FileIcon";
 
 export default function DocumentList({
   documents,
+  onShowDetails,
+  onUpdateDocument,
   setDocuments,
   totalCount,
   selectedId,
@@ -332,7 +334,20 @@ export default function DocumentList({
                           onSelect(d.id, 1);
                         }}
                       />
-                      <MenuItem label="Rename" />
+                      <MenuItem
+                        label="Details"
+                        onClick={() => {
+                          closeMenu();
+                          onShowDetails?.(d);
+                        }}
+                      />
+                      <MenuItem
+                        label="Update"
+                        onClick={() => {
+                          closeMenu();
+                          onUpdateDocument?.(d);
+                        }}
+                      />
                       <MenuItem label="Delete" danger />
                     </div>,
                     document.body,

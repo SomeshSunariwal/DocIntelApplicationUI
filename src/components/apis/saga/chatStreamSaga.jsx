@@ -25,7 +25,9 @@ function createChatStreamChannel(action) {
 
     if (documentId) {
       API_LINK =
-        API_LINK + And + `${QueryParam.DOCUMENT_ID}${encodeURIComponent(documentId)}`;
+        API_LINK +
+        And +
+        `${QueryParam.DOCUMENT_ID}${encodeURIComponent(documentId)}`;
     }
 
     if (documentId && version !== undefined && version !== null) {

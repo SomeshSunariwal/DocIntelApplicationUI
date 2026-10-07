@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import Navbar from "../layout/Navbar";
 import UploadPanel from "../upload/UploadPanel";
 import DocumentList from "../documents/DocumentList";
+import DocumentDetailsModal from "../documents/DocumentDetailsModal";
+import UpdateDocumentModal from "../documents/UpdateDocumentModal";
 import TotalDocuments from "../documents/TotalDocuments";
 import GlobalSearch from "../search/GlobalSearch";
 import DocumentViewer from "../viewer/DocumentViewer";
@@ -10,6 +12,7 @@ import ConfigModal from "../settings/ConfigModal";
 import { getUserAllDocumentsAction } from "../apis/actions/getUserAllDocumentsAction";
 import { filesUploadAction } from "../apis/actions/filesUploadAction";
 import { addOrUpdateConfigAction } from "../apis/actions/addOrUpdateConfigAction";
+import { updateDocumentAction } from "../apis/actions/updateDocumentAction";
 
 const formatDate = (value) => {
   if (!value) return "—";
@@ -65,13 +68,28 @@ const mapApiDocument = (document, parentDocument = null) => {
       const versionNumber = Number(version.version) || 0;
       return versionNumber > latestNumber ? version : latest;
     });
-    return mapApiDocument(
+    const mappedLatest = mapApiDocument(
       {
         ...latestVersion,
         documentId: latestVersion.documentId || document.documentId,
       },
       document,
     );
+    return {
+      ...mappedLatest,
+      latestVersion: Number(latestVersion.version) || 1,
+      versions: versions
+        .map((version) =>
+          mapApiDocument(
+            {
+              ...version,
+              documentId: version.documentId || document.documentId,
+            },
+            document,
+          ),
+        )
+        .sort((a, b) => Number(a.version) - Number(b.version)),
+    };
   }
 
   const type = String(
@@ -83,8 +101,12 @@ const mapApiDocument = (document, parentDocument = null) => {
 
   return {
     id: document.documentId || parentDocument?.documentId,
+    documentId: document.documentId || parentDocument?.documentId,
     name: document.fileName || "Untitled document",
+    fileName: document.fileName || "Untitled document",
+    fileSize: document.fileSize,
     type,
+    fileExtensions: document.fileExtensions || type.toUpperCase(),
     size: formatFileSize(document.fileSize),
     date: formatDate(document.updatedAt || document.createdAt),
     status: mapDocumentStatus(apiStatus),
@@ -92,6 +114,10 @@ const mapApiDocument = (document, parentDocument = null) => {
     pages: Number(document.pages || document.chunks) || 1,
     url: document.URI || document.uri || document.url || "",
     version: document.version || 1,
+    chunks: document.chunks,
+    URI: document.URI || document.uri || document.url || "",
+    createdAt: document.createdAt || parentDocument?.createdAt,
+    updatedAt: document.updatedAt || parentDocument?.updatedAt,
   };
 };
 
@@ -104,6 +130,9 @@ export default function Dashboard({ onLogout }) {
   const [uploadSubmitted, setUploadSubmitted] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsMounted, setSettingsMounted] = useState(false);
+  const [detailsDocument, setDetailsDocument] = useState(null);
+  const [updateDocument, setUpdateDocument] = useState(null);
+  const [updateSubmitted, setUpdateSubmitted] = useState(false);
   const [hasMoreDocuments, setHasMoreDocuments] = useState(true);
   const dispatch = useDispatch();
   const nextPageRef = useRef(1);
@@ -123,6 +152,14 @@ export default function Dashboard({ onLogout }) {
     (state) => state.rootReducer.filesUpload,
   );
   const {
+    loading: documentUpdateLoading,
+    error: documentUpdateError,
+  } = useSelector((state) => state.rootReducer.updateDocument);
+  const userInformation = useSelector(
+    (state) => state.rootReducer.getUserInformation.data,
+  );
+  const {
+    data: savedConfigResponse,
     loading: configLoading,
     error: configError,
     success: configSuccess,
@@ -132,10 +169,7 @@ export default function Dashboard({ onLogout }) {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
-  useEffect(
-    () => () => window.clearTimeout(settingsCloseTimerRef.current),
-    [],
-  );
+  useEffect(() => () => window.clearTimeout(settingsCloseTimerRef.current), []);
 
   const openSettings = () => {
     window.clearTimeout(settingsCloseTimerRef.current);
@@ -190,12 +224,7 @@ export default function Dashboard({ onLogout }) {
   }, [loading, error, lastPage, lastPageEmpty]);
 
   useEffect(() => {
-    if (
-      !loading &&
-      documentResponse &&
-      lastPage === 0 &&
-      !lastPageAppend
-    ) {
+    if (!loading && documentResponse && lastPage === 0 && !lastPageAppend) {
       setHasMoreDocuments(!lastPageEmpty);
     }
   }, [loading, documentResponse, lastPage, lastPageAppend, lastPageEmpty]);
@@ -328,6 +357,24 @@ export default function Dashboard({ onLogout }) {
     setUploadSubmitted(false);
   }, [dispatch, uploadLoading, uploadError, uploading, uploadSubmitted]);
 
+  useEffect(() => {
+    if (!updateSubmitted || documentUpdateLoading) return;
+
+    if (!documentUpdateError) {
+      setUpdateDocument(null);
+      dispatch(getUserAllDocumentsAction({ page: 0, append: true }));
+    }
+    setUpdateSubmitted(false);
+  }, [dispatch, documentUpdateLoading, documentUpdateError, updateSubmitted]);
+
+  const updateDocumentFile = (files) => {
+    const file = files[0];
+    const documentId = updateDocument?.documentId || updateDocument?.id;
+    if (!file || !documentId) return;
+    setUpdateSubmitted(true);
+    dispatch(updateDocumentAction(documentId, file));
+  };
+
   const totalSize = useMemo(() => {
     let mb = 0;
     documents
@@ -356,6 +403,7 @@ export default function Dashboard({ onLogout }) {
         setDark={setDark}
         onLogout={onLogout}
         onSettingsClick={openSettings}
+        userName={userInformation?.username?.trim() || userInformation?.email?.trim() || "User"}
       />
       {settingsMounted && (
         <ConfigModal
@@ -364,7 +412,22 @@ export default function Dashboard({ onLogout }) {
           onSave={(config) => dispatch(addOrUpdateConfigAction(config))}
           loading={configLoading}
           error={configError}
-          success={configSuccess}
+          successMessage={configSuccess ? savedConfigResponse?.message : null}
+        />
+      )}
+      {detailsDocument && (
+        <DocumentDetailsModal
+          document={detailsDocument}
+          onClose={() => setDetailsDocument(null)}
+        />
+      )}
+      {updateDocument && (
+        <UpdateDocumentModal
+          document={updateDocument}
+          onClose={() => setUpdateDocument(null)}
+          onFiles={updateDocumentFile}
+          uploadError={documentUpdateError}
+          loading={documentUpdateLoading}
         />
       )}
       <main className="app-main grid min-h-0 flex-1 grid-cols-[348px_minmax(0,1fr)] gap-4 overflow-hidden px-7 py-3.5">
@@ -372,6 +435,8 @@ export default function Dashboard({ onLogout }) {
           <UploadPanel onFiles={addFiles} uploadError={uploadError} />
           <DocumentList
             documents={documents}
+            onShowDetails={setDetailsDocument}
+            onUpdateDocument={setUpdateDocument}
             setDocuments={setDocuments}
             totalCount={documents.length}
             selectedId={selectedId}

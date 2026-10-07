@@ -178,11 +178,10 @@ function PromptInputAction({
   return (
     <Tooltip {...props}>
       <TooltipTrigger
+        render={children}
         disabled={disabled}
         onClick={(event) => event.stopPropagation()}
-      >
-        {children}
-      </TooltipTrigger>
+      />
 
       <TooltipContent side={side} className={className}>
         {tooltip}

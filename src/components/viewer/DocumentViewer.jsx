@@ -1,6 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Sparkles, Download, Link, MoreVertical } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Sparkles,
+  Download,
+  Link,
+  MoreVertical,
+} from "lucide-react";
 import FileIcon from "../common/FileIcon";
 import { PromptInputBasic } from "../chat/PromptInputBasic";
 import { getDocument } from "pdfjs-dist";
@@ -20,14 +27,132 @@ import TabBar from "./TabBar";
 import { summerizeDocumentAction } from "../apis/actions/summerizeDocumentAction";
 import { Markdown } from "../ui/markdown";
 
-export default function DocumentViewer({ doc, jumpPage, onClose }) {
+function VersionDropdown({ versions, value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const rootRef = useRef(null);
+  const closeTimerRef = useRef(null);
+  const openFrameRef = useRef(null);
+
+  const close = () => {
+    setOpen(false);
+    window.clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = window.setTimeout(() => setMounted(false), 190);
+  };
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const handlePointerDown = (event) => {
+      if (!rootRef.current?.contains(event.target)) close();
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") close();
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(closeTimerRef.current);
+      window.cancelAnimationFrame(openFrameRef.current);
+    },
+    [],
+  );
+
+  const toggle = () => {
+    if (open) {
+      close();
+      return;
+    }
+    window.clearTimeout(closeTimerRef.current);
+    setMounted(true);
+    openFrameRef.current = window.requestAnimationFrame(() => setOpen(true));
+  };
+
+  return (
+    <div ref={rootRef} className="relative">
+      <button
+        type="button"
+        aria-label={`Document version, Version ${value}`}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={toggle}
+        className="flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 shadow-sm transition-colors hover:border-blue-300 hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-[#505050] dark:bg-[#303030] dark:text-slate-200 dark:hover:border-[#606060] dark:hover:bg-[#383838]"
+      >
+        Version {value}
+        <ChevronDown
+          size={14}
+          className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {mounted && (
+        <div
+          role="listbox"
+          aria-label="Document versions"
+          data-state={open ? "open" : "closed"}
+          className="version-dropdown absolute right-0 top-[calc(100%+6px)] z-50 min-w-36 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl dark:border-[#414141] dark:bg-[#303030]"
+        >
+          {versions.map((version) => (
+            <button
+              key={version.version}
+              type="button"
+              role="option"
+              aria-selected={Number(version.version) === Number(value)}
+              onClick={() => {
+                onChange(Number(version.version));
+                close();
+              }}
+              className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-xs transition-colors ${Number(version.version) === Number(value) ? "bg-blue-50 font-semibold text-blue-700 dark:bg-[#26364a] dark:text-blue-300" : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-[#383838]"}`}
+            >
+              Version {version.version}
+              {Number(version.version) === Number(value) && (
+                <Check size={14} aria-hidden="true" />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function DocumentViewer({ doc: selectedDocument, jumpPage, onClose }) {
   const dispatch = useDispatch();
+  const [versionSelection, setVersionSelection] = useState(null);
+  const versionOptions = selectedDocument?.versions || [];
+  const latestVersion =
+    Number(selectedDocument?.latestVersion || selectedDocument?.version) || 1;
+  const savedVersion =
+    versionSelection?.documentId === selectedDocument?.id &&
+    versionOptions.some(
+      (version) => Number(version.version) === versionSelection.version,
+    )
+      ? versionSelection.version
+      : latestVersion;
+  const selectedVersionDocument = versionOptions.find(
+    (version) => Number(version.version) === savedVersion,
+  );
+  const doc = selectedDocument
+    ? {
+        ...selectedDocument,
+        ...selectedVersionDocument,
+        id: selectedDocument.id,
+        documentId: selectedDocument.documentId,
+        versions: versionOptions,
+        latestVersion,
+      }
+    : null;
   const {
     data: summaryChunks,
     loading: summaryLoading,
     error: summaryError,
   } = useSelector((state) => state.rootReducer.summerizeDocument);
-  const [requestedSummaryDocumentId, setRequestedSummaryDocumentId] =
+  const [requestedSummaryKey, setRequestedSummaryKey] =
     useState(null);
   const [tab, setTab] = useState("Chat");
   const [page, setPage] = useState(jumpPage || 1);
@@ -42,7 +167,11 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
   const [viewerWordBuffer, setViewerWordBuffer] = useState(null);
   const [wordPageCount, setWordPageCount] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
-  const [pdf, setPdf] = useState(null);
+  const [loadedPdf, setLoadedPdf] = useState(null);
+  const [loadedPdfVersion, setLoadedPdfVersion] = useState(null);
+  const activeVersionNumber = Number(doc?.version) || 1;
+  const pdf =
+    loadedPdfVersion === activeVersionNumber ? loadedPdf : null;
   const [pdfError, setPdfError] = useState(false);
   const [pageSizes, setPageSizes] = useState([]);
   const [renderedPages, setRenderedPages] = useState(() => new Set());
@@ -66,16 +195,18 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
   const programmaticScrollTimerRef = useRef(null);
   const viewerMenuButtonRef = useRef(null);
   const viewerMenuRef = useRef(null);
+  const previousDocumentIdRef = useRef(doc?.id);
 
   const selectTab = (nextTab) => {
     setTab(nextTab);
+    const summaryKey = `${doc?.id}:${doc?.version}`;
     if (
       nextTab === "Summary" &&
       doc?.id &&
-      requestedSummaryDocumentId !== doc.id
+      requestedSummaryKey !== summaryKey
     ) {
-      dispatch(summerizeDocumentAction(doc.id));
-      setRequestedSummaryDocumentId(doc.id);
+      dispatch(summerizeDocumentAction(doc.id, doc.version));
+      setRequestedSummaryKey(summaryKey);
     }
   };
 
@@ -173,7 +304,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
       cancelAnimationFrame(frame);
       resizeObserver?.disconnect();
     };
-  }, [tab, page, actualPageCount, doc?.type]);
+  }, [tab, page, actualPageCount, doc?.type, doc?.version]);
 
   useEffect(() => {
     if (tab !== "Viewer") return;
@@ -194,9 +325,11 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
   }, [tab, jumpPage, doc?.pages, pdf?.numPages]);
 
   useEffect(() => {
+    const documentChanged = previousDocumentIdRef.current !== doc?.id;
+    previousDocumentIdRef.current = doc?.id;
     setPage(jumpPage || 1);
-    setTab("Chat");
-    setRequestedSummaryDocumentId(null);
+    if (documentChanged) setTab("Chat");
+    setRequestedSummaryKey(null);
     setMenu(false);
     setZoom(100);
     setViewMode("all");
@@ -214,14 +347,15 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
     setRenderedPages(new Set());
     setPageSizes([]);
     setRefreshKey(0);
-  }, [doc?.id]);
+  }, [doc?.id, doc?.version]);
 
   useEffect(() => {
     let cancelled = false;
     let loadingTask;
 
     async function loadPdf() {
-      setPdf(null);
+      setLoadedPdf(null);
+      setLoadedPdfVersion(null);
       setPdfError(false);
       if (!doc?.url || doc.type !== "pdf") return;
 
@@ -229,7 +363,8 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
         loadingTask = getDocument({ url: doc.url });
         const loaded = await loadingTask.promise;
         if (cancelled) return;
-        setPdf(loaded);
+        setLoadedPdf(loaded);
+        setLoadedPdfVersion(activeVersionNumber);
 
         // Read page dimensions once. This lets the viewer reserve the exact
         // space for every page while only rendering pages near the viewport.
@@ -263,7 +398,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
         loadingTask?.destroy?.();
       } catch {}
     };
-  }, [doc?.id, doc?.url, doc?.type]);
+  }, [doc?.id, doc?.url, doc?.type, doc?.version]);
 
   useEffect(() => {
     const onFullscreen = () =>
@@ -474,7 +609,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
       root.removeEventListener("scroll", syncFromDocumentScroll);
       cancelAnimationFrame(frame);
     };
-  }, [tab, doc?.id, actualPageCount, viewMode]);
+  }, [tab, doc?.id, doc?.version, actualPageCount, viewMode]);
 
   // Load TXT and DOCX content for the in-viewer search experience.
   useEffect(() => {
@@ -542,7 +677,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
     return () => {
       cancelled = true;
     };
-  }, [doc?.id, doc?.url, doc?.type]);
+  }, [doc?.id, doc?.url, doc?.type, doc?.version]);
 
   // Render Word as fixed A4 pages, using the same page-by-page model as TXT.
   // We deliberately do not use docx-preview's continuous document canvas here:
@@ -678,6 +813,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
     viewerSearchActive,
     searchIndex,
     doc?.id,
+    doc?.version,
     doc?.type,
     doc?.name,
   ]);
@@ -771,6 +907,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
   }, [
     pdf,
     doc?.id,
+    doc?.version,
     doc?.name,
     viewerText,
     viewerHtml,
@@ -792,7 +929,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
     return () => {
       root.style.zoom = "1";
     };
-  }, [doc?.id, doc?.type, zoom, wordPageCount]);
+  }, [doc?.id, doc?.version, doc?.type, zoom, wordPageCount]);
 
   // Move to the exact occurrence for TXT/Word.
   useEffect(() => {
@@ -1080,6 +1217,7 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
               />
 
               <DocumentPages
+                key={`${doc.id}-${doc.version}`}
                 doc={doc}
                 pdf={pdf}
                 pdfError={pdfError}
@@ -1111,7 +1249,11 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
             <PromptInputBasic
               documentId={doc?.id}
               documentName={doc?.name}
-              documentVersion={doc?.version}
+              documentVersion={doc?.latestVersion || doc?.version}
+              selectedVersionValue={doc?.version}
+              onVersionChange={(version) =>
+                setVersionSelection({ documentId: doc?.id, version })
+              }
             />
           </div>
         );
@@ -1176,6 +1318,15 @@ export default function DocumentViewer({ doc, jumpPage, onClose }) {
             <Sparkles size={15} />
             Ask AI
           </button>
+          {versionOptions.length > 0 && (
+            <VersionDropdown
+              versions={versionOptions}
+              value={doc.version}
+              onChange={(version) =>
+                setVersionSelection({ documentId: doc.id, version })
+              }
+            />
+          )}
           <button
             onClick={downloadDocument}
             className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-[12px] dark:border-[#505050] dark:hover:bg-[#383838]"

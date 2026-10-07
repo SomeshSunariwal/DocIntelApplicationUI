@@ -8,17 +8,23 @@ import {
 
 function updateDocument(action) {
   const { documentId, document } = action.payload;
+
+  const formData = new FormData();
+
+  formData.append("file", document);
+
   const API_LINK = `${HomeEndpoint}${API_URL.UPDATE_DOCUMENT}/${encodeURIComponent(documentId)}`;
 
   return fetch(API_LINK, {
     method: "PUT",
     headers: {
       Authorization: "Bearer " + getAuthToken(),
-      "Content-Type": "application/json",
     },
-    body: JSON.stringify(document),
+    body: formData,
   })
-    .then((response) => response.json())
+    .then((response) => {
+      return response.json();
+    })
     .catch((error) => {
       throw error;
     });
