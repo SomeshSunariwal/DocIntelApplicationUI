@@ -7,6 +7,7 @@ export const getUserInformationReducer = (state = initialState, action) => {
     case GetUserInformationActions.GET_USER_INFORMATION_REQUESTED:
       return {
         ...state,
+        data: null,
         loading: true,
         error: null,
       };

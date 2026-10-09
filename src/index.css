@@ -747,6 +747,23 @@ mark {
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
+.signup-full-width {
+  display: grid;
+  gap: 14px;
+}
+.signup-card .login-error {
+  text-align: center;
+}
+.signup-password-status {
+  display: flex;
+  flex-shrink: 0;
+}
+.signup-password-status.is-match {
+  color: #16a34a;
+}
+.signup-password-status.is-mismatch {
+  color: #dc2626;
+}
 .signup-name-row {
   margin-top: 14px;
 }

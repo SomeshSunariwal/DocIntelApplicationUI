@@ -155,8 +155,8 @@ export default function Dashboard({ onLogout }) {
     loading: documentUpdateLoading,
     error: documentUpdateError,
   } = useSelector((state) => state.rootReducer.updateDocument);
-  const userInformation = useSelector(
-    (state) => state.rootReducer.getUserInformation.data,
+  const { data: userInformation, loading: userInformationLoading } = useSelector(
+    (state) => state.rootReducer.getUserInformation,
   );
   const {
     data: savedConfigResponse,
@@ -403,7 +403,8 @@ export default function Dashboard({ onLogout }) {
         setDark={setDark}
         onLogout={onLogout}
         onSettingsClick={openSettings}
-        userName={userInformation?.username?.trim() || userInformation?.email?.trim() || "User"}
+        userName={userInformation?.username?.trim() || "User"}
+        userNameLoading={userInformationLoading}
       />
       {settingsMounted && (
         <ConfigModal

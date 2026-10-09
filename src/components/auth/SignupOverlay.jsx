@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { registerUserAction } from "../apis/actions/registerUserAction";
 import {
   ArrowRight,
+  Check,
+  X,
   Eye,
   EyeOff,
   LockKeyhole,
@@ -9,13 +13,57 @@ import {
 } from "lucide-react";
 
 export default function SignupOverlay({ onLogin }) {
+  const dispatch = useDispatch();
+  const { loading, success, error: registrationError } = useSelector(
+    (state) => state.rootReducer.registerUser,
+  );
+  const [fields, setFields] = useState({
+    username: "", firstName: "", lastName: "", email: "", password: "", rePassword: "",
+  });
+  const [submitted, setSubmitted] = useState(false);
+  const registrationPending = useRef(false);
+  useEffect(() => {
+    if (registrationPending.current && !loading) {
+      registrationPending.current = false;
+      if (success) onLogin();
+    }
+  }, [loading, success, onLogin]);
+  const passwordsMatch = fields.password === fields.rePassword && !!fields.password.trim();
+  const updateField = (event) => {
+    setFields((values) => ({ ...values, [event.target.name]: event.target.value }));
+    setError("");
+    setSubmitted(false);
+  };
   const [showPassword, setShowPassword] = useState(false);
   const [showRePassword, setShowRePassword] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setError("Sign up will be connected later.");
+    if (loading) return;
+    setSubmitted(false);
+    if (Object.values(fields).some((value) => !value.trim())) {
+      setError("Please fill in all fields.");
+      return;
+    }
+    if (!e.currentTarget.elements.email.validity.valid) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    if (!passwordsMatch) {
+      setError("Password and Re Password must match.");
+      return;
+    }
+    setError("");
+    setSubmitted(true);
+    registrationPending.current = true;
+    dispatch(registerUserAction({
+      username: fields.username.trim(),
+      firstName: fields.firstName.trim(),
+      lastName: fields.lastName.trim(),
+      email: fields.email.trim(),
+      password: fields.password,
+    }));
   };
 
   return (
@@ -46,8 +94,8 @@ export default function SignupOverlay({ onLogin }) {
           Sign up to get started with your workspace
         </p>
 
-        <form onSubmit={handleSubmit}>
-          <div className="signup-two-col">
+        <form onSubmit={handleSubmit} noValidate>
+          <div className="signup-full-width">
             <div>
               <label className="login-label" htmlFor="signup-username">
                 Username
@@ -56,6 +104,10 @@ export default function SignupOverlay({ onLogin }) {
                 <UserRound size={18} strokeWidth={1.8} />
                 <input
                   id="signup-username"
+                  name="username"
+                  value={fields.username}
+                  onChange={updateField}
+                  required
                   placeholder="Username"
                   autoComplete="username"
                 />
@@ -69,6 +121,10 @@ export default function SignupOverlay({ onLogin }) {
                 <Mail size={18} strokeWidth={1.8} />
                 <input
                   id="signup-email"
+                  name="email"
+                  value={fields.email}
+                  onChange={updateField}
+                  required
                   type="email"
                   placeholder="Email"
                   autoComplete="email"
@@ -86,6 +142,10 @@ export default function SignupOverlay({ onLogin }) {
                 <UserRound size={18} strokeWidth={1.8} />
                 <input
                   id="signup-first-name"
+                  name="firstName"
+                  value={fields.firstName}
+                  onChange={updateField}
+                  required
                   placeholder="First name"
                   autoComplete="given-name"
                 />
@@ -99,6 +159,10 @@ export default function SignupOverlay({ onLogin }) {
                 <UserRound size={18} strokeWidth={1.8} />
                 <input
                   id="signup-last-name"
+                  name="lastName"
+                  value={fields.lastName}
+                  onChange={updateField}
+                  required
                   placeholder="Last name"
                   autoComplete="family-name"
                 />
@@ -116,6 +180,10 @@ export default function SignupOverlay({ onLogin }) {
             <LockKeyhole size={18} strokeWidth={1.8} />
             <input
               id="signup-password"
+              name="password"
+              value={fields.password}
+              onChange={updateField}
+              required
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               autoComplete="new-password"
@@ -140,10 +208,24 @@ export default function SignupOverlay({ onLogin }) {
             <LockKeyhole size={18} strokeWidth={1.8} />
             <input
               id="signup-re-password"
+              name="rePassword"
+              value={fields.rePassword}
+              onChange={updateField}
+              required
+              aria-invalid={!!fields.rePassword && !passwordsMatch}
               type={showRePassword ? "text" : "password"}
               placeholder="Re-enter your password"
               autoComplete="new-password"
             />
+            {fields.rePassword && (
+              <span
+                className={`signup-password-status ${passwordsMatch ? "is-match" : "is-mismatch"}`}
+                role="status"
+                aria-label={passwordsMatch ? "Passwords match" : "Passwords do not match"}
+              >
+                {passwordsMatch ? <Check size={19} /> : <X size={19} />}
+              </span>
+            )}
             <button
               type="button"
               className="password-toggle"
@@ -154,10 +236,12 @@ export default function SignupOverlay({ onLogin }) {
             </button>
           </div>
 
-          {error && <p className="login-error">{error}</p>}
+          {(error || (submitted && registrationError)) && (
+            <p className="login-error" role="alert">{error || registrationError}</p>
+          )}
 
-          <button className="login-submit signup-submit" type="submit">
-            <span>Sign up</span>
+          <button className="login-submit signup-submit" type="submit" disabled={loading}>
+            <span>{loading ? "Signing up…" : "Sign up"}</span>
             <ArrowRight size={21} />
           </button>
         </form>
