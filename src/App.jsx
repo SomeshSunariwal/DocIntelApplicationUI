@@ -79,6 +79,7 @@ export default function App() {
   const handleLogin = () => {
     const savedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
     if (!savedToken) return;
+    dispatch(getUserInformationAction());
     setAuthState("signed-in");
     navigate("/", { replace: true });
   };

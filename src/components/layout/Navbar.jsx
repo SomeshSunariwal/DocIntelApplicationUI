@@ -15,6 +15,7 @@ export default function Navbar({
   onLogout,
   onSettingsClick,
   userName = "User",
+  userNameLoading = false,
 }) {
   return (
     <header className="nav flex h-[66px] shrink-0 items-center border-b border-slate-200 bg-white px-7 shadow-[0_1px_8px_rgba(30,64,175,.04)] dark:border-[#414141] dark:bg-[#303030]">
@@ -55,7 +56,16 @@ export default function Navbar({
             className="h-9 w-9 rounded-full border border-slate-300 object-cover dark:border-[#606060]"
           />
           <div>
-            <div className="text-[13px] font-semibold">{userName}</div>
+            <div className="text-[13px] font-semibold" aria-live="polite">
+              {userNameLoading ? (
+                <span
+                  className="select-none blur-[3px] animate-[generated-text-shimmer_1.6s_linear_infinite] bg-[linear-gradient(90deg,#64748b_0%,#ffffff_45%,#64748b_100%)] bg-[length:200%_100%] bg-clip-text text-transparent dark:bg-[linear-gradient(90deg,#94a3b8_0%,#ffffff_45%,#94a3b8_100%)]"
+                  aria-label="Loading username"
+                >
+                  Username
+                </span>
+              ) : userName}
+            </div>
             <div className="text-[11px] text-slate-500">Free Plan</div>
           </div>
           <ProfileMenu onLogout={onLogout} />

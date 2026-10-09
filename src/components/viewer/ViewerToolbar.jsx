@@ -38,25 +38,25 @@ export default function ViewerToolbar({
 }) {
   return (
     <div className="flex min-h-[44px] shrink-0 items-center border-b border-slate-100 dark:border-[#414141]">
-      <div className="flex items-center border-r text-[12px] border-slate-100 px-3 dark:border-[#414141]">
+      <div className="flex w-[132px] shrink-0 items-center justify-between border-r border-slate-100 px-3 text-[12px] tabular-nums dark:border-[#414141]">
         <button
           onClick={onPreviousPage}
           disabled={page <= 1}
-          className="disabled:opacity-30"
+          className="w-5 shrink-0 disabled:opacity-30"
         >
           <ChevronLeft size={17} />
         </button>
         <button
           onClick={onGoToPage}
-          className="mx-2 rounded bg-slate-100 px-2 py-1 dark:bg-[#414141]"
+          className="h-7 w-8 shrink-0 rounded bg-slate-100 px-2 py-1 text-center dark:bg-[#414141]"
         >
           {page}
         </button>
-        <span className="">/ {actualPageCount}</span>
+        <span className="w-12 shrink-0 text-center">/ {actualPageCount}</span>
         <button
           onClick={onNextPage}
           disabled={page >= actualPageCount}
-          className="ml-2 disabled:opacity-30"
+          className="w-5 shrink-0 disabled:opacity-30"
         >
           <ChevronRight size={17} />
         </button>

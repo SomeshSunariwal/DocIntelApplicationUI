@@ -121,7 +121,11 @@ function VersionDropdown({ versions, value, onChange }) {
   );
 }
 
-export default function DocumentViewer({ doc: selectedDocument, jumpPage, onClose }) {
+export default function DocumentViewer({
+  doc: selectedDocument,
+  jumpPage,
+  onClose,
+}) {
   const dispatch = useDispatch();
   const [versionSelection, setVersionSelection] = useState(null);
   const versionOptions = selectedDocument?.versions || [];
@@ -152,8 +156,7 @@ export default function DocumentViewer({ doc: selectedDocument, jumpPage, onClos
     loading: summaryLoading,
     error: summaryError,
   } = useSelector((state) => state.rootReducer.summerizeDocument);
-  const [requestedSummaryKey, setRequestedSummaryKey] =
-    useState(null);
+  const [requestedSummaryKey, setRequestedSummaryKey] = useState(null);
   const [tab, setTab] = useState("Chat");
   const [page, setPage] = useState(jumpPage || 1);
   const [zoom, setZoom] = useState(100);
@@ -170,8 +173,7 @@ export default function DocumentViewer({ doc: selectedDocument, jumpPage, onClos
   const [loadedPdf, setLoadedPdf] = useState(null);
   const [loadedPdfVersion, setLoadedPdfVersion] = useState(null);
   const activeVersionNumber = Number(doc?.version) || 1;
-  const pdf =
-    loadedPdfVersion === activeVersionNumber ? loadedPdf : null;
+  const pdf = loadedPdfVersion === activeVersionNumber ? loadedPdf : null;
   const [pdfError, setPdfError] = useState(false);
   const [pageSizes, setPageSizes] = useState([]);
   const [renderedPages, setRenderedPages] = useState(() => new Set());
@@ -1356,8 +1358,6 @@ export default function DocumentViewer({ doc: selectedDocument, jumpPage, onClos
                 className="absolute right-0 top-11 z-50 w-40 rounded-lg border border-slate-200 bg-white p-1 shadow-xl dark:border-[#414141] dark:bg-[#303030]"
               >
                 <Menu label="Open in new tab" onClick={openInNewTab} />
-                <Menu label="Rename" />
-                <Menu label="Move to folder" />
                 <Menu
                   label="Close document"
                   red
